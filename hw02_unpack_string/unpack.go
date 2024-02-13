@@ -8,13 +8,13 @@ import (
 
 var ErrInvalidString = errors.New("invalid string")
 
-//func main() {
+// func main() {
 //	str, err := Unpack("aaa10b")
 //	fmt.Println(str, err)
-//}
+// }
 
 func Unpack(str string) (string, error) {
-	//fmt.Println(str)
+	// fmt.Println(str)
 	source := []rune(str)
 
 	b := strings.Builder{}
@@ -50,7 +50,7 @@ func Unpack(str string) (string, error) {
 			}
 		}
 
-		//fmt.Println(b.String())
+		// fmt.Println(b.String())
 	}
 
 	return b.String(), nil
