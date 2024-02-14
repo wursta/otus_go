@@ -26,7 +26,7 @@ func Unpack(str string) (string, error) {
 		}
 
 		// Числа не могут идти друг за другом.
-		// Если предыдущее значение - это число отдаём ошибку.
+		// Если предыдущее значение - это число, то отдаём ошибку.
 		_, err = strconv.Atoi(string(source[i-1]))
 		if err == nil {
 			return "", ErrInvalidString
