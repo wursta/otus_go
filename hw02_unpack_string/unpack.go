@@ -21,7 +21,6 @@ func Unpack(str string) (string, error) {
 
 	for i, v := range source {
 		repeatCount, err := strconv.Atoi(string(v))
-
 		if err != nil {
 			b.WriteRune(v)
 			continue
