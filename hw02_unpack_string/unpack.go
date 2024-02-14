@@ -8,13 +8,7 @@ import (
 
 var ErrInvalidString = errors.New("invalid string")
 
-// func main() {
-//	str, err := Unpack("aaa10b")
-//	fmt.Println(str, err)
-// }
-
 func Unpack(str string) (string, error) {
-	// fmt.Println(str)
 	source := []rune(str)
 
 	b := strings.Builder{}
@@ -26,7 +20,7 @@ func Unpack(str string) (string, error) {
 			continue
 		}
 
-		// Если предыдущего элемента нет, то это первый элемент и он число -> то отдаём ошибку
+		// Если мы тут, то это число, но если это первый элемент, то отдаём ошибку
 		if i == 0 {
 			return "", ErrInvalidString
 		}
@@ -49,9 +43,6 @@ func Unpack(str string) (string, error) {
 				b.WriteRune(tmpV)
 			}
 		}
-
-		// fmt.Println(b.String())
 	}
-
 	return b.String(), nil
 }
