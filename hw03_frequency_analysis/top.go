@@ -22,7 +22,7 @@ func Top10(str string) []string {
 			continue
 		}
 
-		word := trimWord(v)
+		word := trimAndLowerWord(v)
 		if _, ok := wordsMap[word]; !ok {
 			wordsMap[word] = 0
 		}
@@ -55,8 +55,8 @@ func Top10(str string) []string {
 	return top
 }
 
-// Обрезает у слова символы !(воскл. знак), '(кавычка), .(точка), ,(запятая).
-func trimWord(v string) string {
+// Приводит к нижнему регистру и обрезает символы !(воскл. знак), '(кавычка), .(точка), ,(запятая).
+func trimAndLowerWord(v string) string {
 	v = strings.ToLower(v)
 	v = strings.Trim(v, "!',.")
 	return v
