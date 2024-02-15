@@ -11,14 +11,12 @@ func Top10(str string) []string {
 	}
 
 	words := strings.Fields(str)
-
 	if len(words) == 0 {
 		return nil
 	}
 
-	wordsMap := make(map[string]int, len(words))
-
 	// Наполняем мапу количеством упоминаний, обрабатывая слова обрезая некоторые символы
+	wordsMap := make(map[string]int, len(words))
 	for _, v := range words {
 		if v == "-" {
 			continue
@@ -50,10 +48,10 @@ func Top10(str string) []string {
 
 		return wordsMap[wi] > wordsMap[wj]
 	})
+
 	if len(top) > 10 {
 		return top[:10]
 	}
-
 	return top
 }
 
