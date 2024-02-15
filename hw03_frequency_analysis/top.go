@@ -1,8 +1,14 @@
 package hw03frequencyanalysis
 
 import (
+	"slices"
 	"sort"
 	"strings"
+)
+
+var (
+	trimSymbols = "!',."
+	nonWords    = []string{"-"}
 )
 
 func Top10(str string) []string {
@@ -18,7 +24,7 @@ func Top10(str string) []string {
 	// Наполняем мапу количеством упоминаний, обрабатывая слова и обрезая некоторые символы
 	wordsMap := make(map[string]int, len(words))
 	for _, v := range words {
-		if v == "-" {
+		if slices.Contains(nonWords, v) {
 			continue
 		}
 
@@ -58,6 +64,6 @@ func Top10(str string) []string {
 // Обрезает у слова символы !(воскл. знак), '(кавычка), .(точка), ,(запятая).
 func trimWord(v string) string {
 	v = strings.ToLower(v)
-	v = strings.Trim(v, "!',.")
+	v = strings.Trim(v, trimSymbols)
 	return v
 }
