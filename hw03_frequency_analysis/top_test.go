@@ -94,4 +94,8 @@ func TestTop10(t *testing.T) {
             - -------
 		`))
 	})
+
+	t.Run("positive test with only spaces string", func(t *testing.T) {
+		require.Nil(t, Top10("    "))
+	})
 }
