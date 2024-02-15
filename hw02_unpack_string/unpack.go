@@ -63,5 +63,5 @@ func getNum(letter rune) (int, bool) {
 	if err != nil {
 		return 0, false
 	}
-	return num, err == nil
+	return num, true
 }
