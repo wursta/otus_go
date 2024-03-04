@@ -14,23 +14,38 @@ type lruCache struct {
 	items    map[Key]*ListItem
 }
 
+type lruCacheEl struct {
+	key   Key
+	value interface{}
+}
+
 func (c lruCache) Get(key Key) (interface{}, bool) {
 	item, ok := c.items[key]
 	if !ok {
 		return nil, false
 	}
 	c.queue.MoveToFront(item)
-	return item.Value, true
+	cacheEl := item.Value.(*lruCacheEl)
+	return cacheEl.value, true
 }
 
 func (c lruCache) Set(key Key, value interface{}) bool {
 	item, inCache := c.items[key]
+
+	if len(c.items) == c.capacity {
+		backNode := c.queue.Back()
+		cacheEl := backNode.Value.(*lruCacheEl)
+		delete(c.items, cacheEl.key)
+		c.queue.Remove(backNode)
+	}
+
 	if inCache {
-		item.Value = value
+		cacheEl := item.Value.(*lruCacheEl)
+		cacheEl.value = value
 		c.queue.MoveToFront(item)
 	} else {
-		newItem := c.queue.PushFront(value)
-		c.items[key] = newItem
+		cacheEl := &lruCacheEl{key: key, value: value}
+		c.items[key] = c.queue.PushFront(cacheEl)
 	}
 
 	return inCache

@@ -53,8 +53,14 @@ func (l *list) PushFront(v interface{}) *ListItem {
 
 func (l *list) PushBack(v interface{}) *ListItem {
 	newListItem := &ListItem{Value: v, Prev: l.lastEl}
-	l.lastEl.Next = newListItem
-	l.lastEl = newListItem
+
+	if l.lastEl == nil {
+		l.queue = newListItem
+		l.lastEl = newListItem
+	} else {
+		l.lastEl.Next = newListItem
+		l.lastEl = newListItem
+	}
 	l.len++
 	return newListItem
 }
