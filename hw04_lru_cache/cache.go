@@ -32,18 +32,18 @@ func (c lruCache) Get(key Key) (interface{}, bool) {
 func (c lruCache) Set(key Key, value interface{}) bool {
 	item, inCache := c.items[key]
 
-	if len(c.items) == c.capacity {
-		backNode := c.queue.Back()
-		cacheEl := backNode.Value.(*lruCacheEl)
-		delete(c.items, cacheEl.key)
-		c.queue.Remove(backNode)
-	}
-
 	if inCache {
 		cacheEl := item.Value.(*lruCacheEl)
 		cacheEl.value = value
 		c.queue.MoveToFront(item)
 	} else {
+		if len(c.items) == c.capacity {
+			backNode := c.queue.Back()
+			cacheEl := backNode.Value.(*lruCacheEl)
+			delete(c.items, cacheEl.key)
+			c.queue.Remove(backNode)
+		}
+
 		cacheEl := &lruCacheEl{key: key, value: value}
 		c.items[key] = c.queue.PushFront(cacheEl)
 	}
