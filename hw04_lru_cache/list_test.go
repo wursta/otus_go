@@ -25,6 +25,8 @@ func TestList(t *testing.T) {
 		l.Remove(l.Back())  // [20]
 		l.Remove(l.Front()) // []
 		require.Equal(t, 0, l.Len())
+		require.Nil(t, l.Front())
+		require.Nil(t, l.Back())
 
 		l2 := NewList()
 		l2.PushFront(10) // [10]
@@ -35,6 +37,8 @@ func TestList(t *testing.T) {
 		l2.Remove(l2.Front()) // [20]
 		l2.Remove(l2.Back())  // []
 		require.Equal(t, 0, l2.Len())
+		require.Nil(t, l2.Front())
+		require.Nil(t, l2.Back())
 	})
 
 	t.Run("complex", func(t *testing.T) {
