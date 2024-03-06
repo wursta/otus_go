@@ -66,7 +66,7 @@ func (l *list) PushBack(v interface{}) *ListItem {
 }
 
 func (l *list) Remove(i *ListItem) {
-	// Если удаляется последний элемент, то нужно обновить lastEl
+	// Если удаляется последний элемент, то нужно обновить lastItem
 	if i.Next == nil {
 		l.lastItem = i.Prev
 	}
@@ -90,7 +90,7 @@ func (l *list) MoveToFront(i *ListItem) {
 		return
 	}
 
-	// Если перемещается последний элемент, то нужно обновить lastEl
+	// Если перемещается последний элемент, то нужно обновить lastItem
 	if i.Next == nil {
 		l.lastItem = i.Prev
 	}
