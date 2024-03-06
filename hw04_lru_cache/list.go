@@ -18,8 +18,8 @@ type ListItem struct {
 
 type list struct {
 	itemsCount int
-	firstEl    *ListItem
-	lastEl     *ListItem
+	firstItem  *ListItem
+	lastItem   *ListItem
 }
 
 func (l *list) Len() int {
@@ -27,24 +27,24 @@ func (l *list) Len() int {
 }
 
 func (l *list) Front() *ListItem {
-	return l.firstEl
+	return l.firstItem
 }
 
 func (l *list) Back() *ListItem {
-	return l.lastEl
+	return l.lastItem
 }
 
 func (l *list) PushFront(v interface{}) *ListItem {
-	newListItem := &ListItem{Value: v, Next: l.firstEl}
-	l.firstEl = newListItem
+	newListItem := &ListItem{Value: v, Next: l.firstItem}
+	l.firstItem = newListItem
 
-	if l.firstEl.Next != nil {
-		l.firstEl.Next.Prev = newListItem
+	if l.firstItem.Next != nil {
+		l.firstItem.Next.Prev = newListItem
 	}
 
 	// Если это первый элемент в цепочке, то он же является последним
-	if l.lastEl == nil {
-		l.lastEl = l.firstEl
+	if l.lastItem == nil {
+		l.lastItem = l.firstItem
 	}
 
 	l.itemsCount++
@@ -52,14 +52,14 @@ func (l *list) PushFront(v interface{}) *ListItem {
 }
 
 func (l *list) PushBack(v interface{}) *ListItem {
-	newListItem := &ListItem{Value: v, Prev: l.lastEl}
+	newListItem := &ListItem{Value: v, Prev: l.lastItem}
 
-	if l.lastEl == nil {
-		l.firstEl = newListItem
-		l.lastEl = newListItem
+	if l.lastItem == nil {
+		l.firstItem = newListItem
+		l.lastItem = newListItem
 	} else {
-		l.lastEl.Next = newListItem
-		l.lastEl = newListItem
+		l.lastItem.Next = newListItem
+		l.lastItem = newListItem
 	}
 	l.itemsCount++
 	return newListItem
@@ -68,7 +68,7 @@ func (l *list) PushBack(v interface{}) *ListItem {
 func (l *list) Remove(i *ListItem) {
 	// Если удаляется последний элемент, то нужно обновить lastEl
 	if i.Next == nil {
-		l.lastEl = i.Prev
+		l.lastItem = i.Prev
 	}
 	if i.Prev != nil {
 		i.Prev.Next = i.Next
@@ -79,8 +79,8 @@ func (l *list) Remove(i *ListItem) {
 	l.itemsCount--
 
 	if l.itemsCount == 0 {
-		l.firstEl = nil
-		l.lastEl = nil
+		l.firstItem = nil
+		l.lastItem = nil
 	}
 }
 
@@ -92,7 +92,7 @@ func (l *list) MoveToFront(i *ListItem) {
 
 	// Если перемещается последний элемент, то нужно обновить lastEl
 	if i.Next == nil {
-		l.lastEl = i.Prev
+		l.lastItem = i.Prev
 	}
 
 	if i.Prev != nil {
@@ -103,9 +103,9 @@ func (l *list) MoveToFront(i *ListItem) {
 		i.Next.Prev = i.Prev
 	}
 
-	i.Next = l.firstEl
+	i.Next = l.firstItem
 	i.Prev = nil
-	l.firstEl = i
+	l.firstItem = i
 }
 
 func NewList() List {
