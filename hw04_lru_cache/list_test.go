@@ -22,7 +22,11 @@ func TestList(t *testing.T) {
 		l.PushBack(30) // [10, 20, 30]
 
 		l.Remove(l.Front()) // [20, 30]
-		l.Remove(l.Back())  // [20]
+		require.Equal(t, 20, l.Front().Value)
+
+		l.Remove(l.Back()) // [20]
+		require.Equal(t, 20, l.Back().Value)
+
 		l.Remove(l.Front()) // []
 		require.Equal(t, 0, l.Len())
 		require.Nil(t, l.Front())

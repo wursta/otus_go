@@ -66,16 +66,23 @@ func (l *list) PushBack(v interface{}) *ListItem {
 }
 
 func (l *list) Remove(i *ListItem) {
+	// Если удаляется первый элемент, то нужно обновить firstItem
+	if i.Prev == nil {
+		l.firstItem = i.Next
+	}
 	// Если удаляется последний элемент, то нужно обновить lastItem
 	if i.Next == nil {
 		l.lastItem = i.Prev
 	}
+
+	// Если удаляется промежуточный элемент, то нужно изменить Next и Prev его соседей.
 	if i.Prev != nil {
 		i.Prev.Next = i.Next
 	}
 	if i.Next != nil {
 		i.Next.Prev = i.Prev
 	}
+
 	l.itemsCount--
 
 	if l.itemsCount == 0 {
