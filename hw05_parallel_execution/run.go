@@ -21,9 +21,8 @@ func Run(tasks []Task, goroutinesCount, maxErrors int) error {
 			mu.Unlock()
 			wg.Wait()
 			break
-		} else {
-			mu.Unlock()
 		}
+		mu.Unlock()
 
 		wg.Add(1)
 
@@ -50,9 +49,8 @@ func Run(tasks []Task, goroutinesCount, maxErrors int) error {
 	if isMaxErrorsReached(errorsCount, maxErrors) {
 		mu.Unlock()
 		return ErrErrorsLimitExceeded
-	} else {
-		mu.Unlock()
 	}
+	mu.Unlock()
 
 	return nil
 }
