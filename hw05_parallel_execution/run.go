@@ -9,56 +9,69 @@ var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
 
 type Task func() error
 
+type ExecutionResult struct {
+	mu          sync.Mutex
+	maxErrors   int
+	errorsCount int
+}
+
+func (r *ExecutionResult) inc() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.errorsCount++
+}
+
+func (r *ExecutionResult) isMaxErrorsReached() bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if r.maxErrors <= 0 {
+		return false
+	}
+
+	return r.errorsCount >= r.maxErrors
+}
+
+func fillTasksChannel(tasks []Task) chan Task {
+	tasksChannel := make(chan Task, len(tasks))
+	for i := 0; i < len(tasks); i++ {
+		tasksChannel <- tasks[i]
+	}
+	close(tasksChannel)
+	return tasksChannel
+}
+
 // Run starts tasks in goroutinesCount goroutines and stops its work when receiving maxErrors errors from tasks.
 func Run(tasks []Task, goroutinesCount, maxErrors int) error {
-	errorsCount := 0
+	result := ExecutionResult{maxErrors: maxErrors}
 	wg := sync.WaitGroup{}
-	mu := sync.Mutex{}
-	for i := 1; i <= len(tasks); i++ {
-		// Если количество ошибок уже превысило допустимое количество, ожидаем завершения оставшихся горутин и выходим.
-		mu.Lock()
-		if isMaxErrorsReached(errorsCount, maxErrors) {
-			mu.Unlock()
-			wg.Wait()
-			break
-		}
-		mu.Unlock()
 
+	tasksChannel := fillTasksChannel(tasks)
+
+	for i := 0; i < goroutinesCount; i++ {
 		wg.Add(1)
-
-		go func(i int) {
+		go func() {
 			defer wg.Done()
 
-			err := tasks[i-1]()
-			if err != nil {
-				mu.Lock()
-				errorsCount++
-				mu.Unlock()
-			}
-		}(i)
+			for task := range tasksChannel {
+				if result.isMaxErrorsReached() {
+					break
+				}
 
-		// Если мы запустили "пороговое" количество горутин, то дожидаемся их выполнения
-		if i%goroutinesCount == 0 {
-			wg.Wait()
-		}
+				err := task()
+				if err != nil {
+					result.inc()
+				}
+			}
+		}()
 	}
 
 	wg.Wait()
 
-	mu.Lock()
-	if isMaxErrorsReached(errorsCount, maxErrors) {
-		mu.Unlock()
+	if result.isMaxErrorsReached() {
 		return ErrErrorsLimitExceeded
 	}
-	mu.Unlock()
 
 	return nil
-}
-
-func isMaxErrorsReached(errorsCount, maxErrors int) bool {
-	if maxErrors <= 0 {
-		return false
-	}
-
-	return errorsCount >= maxErrors
 }
