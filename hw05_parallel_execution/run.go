@@ -33,22 +33,12 @@ func (r *ExecutionResult) isMaxErrorsReached() bool {
 	return r.errorsCount >= r.maxErrors
 }
 
-func fillTasksChannel(tasks []Task) chan Task {
-	tasksChannel := make(chan Task, len(tasks))
-	for i := 0; i < len(tasks); i++ {
-		tasksChannel <- tasks[i]
-	}
-	close(tasksChannel)
-	return tasksChannel
-}
-
 // Run starts tasks in goroutinesCount goroutines and stops its work when receiving maxErrors errors from tasks.
 func Run(tasks []Task, goroutinesCount, maxErrors int) error {
 	result := ExecutionResult{maxErrors: maxErrors}
 	wg := sync.WaitGroup{}
 
-	tasksChannel := fillTasksChannel(tasks)
-
+	tasksChannel := make(chan Task)
 	for i := 0; i < goroutinesCount; i++ {
 		wg.Add(1)
 		go func() {
@@ -66,6 +56,14 @@ func Run(tasks []Task, goroutinesCount, maxErrors int) error {
 			}
 		}()
 	}
+
+	for i := 0; i < len(tasks); i++ {
+		if result.isMaxErrorsReached() {
+			break
+		}
+		tasksChannel <- tasks[i]
+	}
+	close(tasksChannel)
 
 	wg.Wait()
 
