@@ -90,4 +90,43 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+
+	t.Run("no data case", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{}
+
+		go func() {
+			defer close(in)
+			for _, v := range data {
+				in <- v
+			}
+		}()
+
+		result := make([]string, 0, 10)
+		for s := range ExecutePipeline(in, nil, stages...) {
+			result = append(result, s.(string))
+		}
+
+		require.Len(t, result, 0)
+		require.Equal(t, []string{}, result)
+	})
+
+	t.Run("no stages case", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]int, 0, 10)
+		for v := range ExecutePipeline(in, nil, []Stage{}...) {
+			result = append(result, v.(int))
+		}
+
+		require.Equal(t, []int{1, 2, 3, 4, 5}, result)
+	})
 }
