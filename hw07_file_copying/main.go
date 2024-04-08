@@ -19,7 +19,6 @@ func init() {
 func main() {
 	flag.Parse()
 	err := Copy(from, to, offset, limit, true)
-
 	if err != nil {
 		panic(err)
 	}
