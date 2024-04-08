@@ -18,5 +18,9 @@ func init() {
 
 func main() {
 	flag.Parse()
-	// Place your code here.
+	err := Copy(from, to, offset, limit, true)
+
+	if err != nil {
+		panic(err)
+	}
 }
