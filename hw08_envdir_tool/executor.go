@@ -6,9 +6,7 @@ import (
 	"os/exec"
 )
 
-var (
-	ErrCommandRequired = errors.New("command argument not passed")
-)
+var ErrCommandRequired = errors.New("command argument not passed")
 
 // RunCmd runs a command + arguments (cmd) with environment variables from env.
 func RunCmd(cmd []string, env Environment) (returnCode int) {
@@ -28,12 +26,11 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	}
 
 	if err := execCmd.Wait(); err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			returnCode = exitErr.ExitCode()
-			return
+		var exitErrType *exec.ExitError
+		if errors.As(err, &exitErrType) {
+			returnCode = exitErrType.ExitCode()
 		} else {
 			returnCode = 1
-			return
 		}
 	}
 

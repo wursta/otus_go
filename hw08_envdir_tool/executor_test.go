@@ -41,3 +41,8 @@ func TestRunCmd(t *testing.T) {
 		})
 	}
 }
+
+func TestRunNoCmd(t *testing.T) {
+	returnCode := RunCmd([]string{}, Environment{})
+	require.Equal(t, 1, returnCode)
+}

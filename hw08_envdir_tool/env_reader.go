@@ -8,9 +8,7 @@ import (
 	"strings"
 )
 
-var (
-	ErrUnsupportedFile = errors.New("unsupported file")
-)
+var ErrUnsupportedFile = errors.New("unsupported file")
 
 type Environment map[string]EnvValue
 
@@ -88,7 +86,7 @@ func readEnvFile(dirPath, fileName string) (envValue EnvValue, err error) {
 	}
 
 	firstLineText = strings.TrimRight(firstLineText, " ")
-	firstLineText = string(bytes.Replace([]byte(firstLineText), []byte{0x00}, []byte("\n"), -1))
+	firstLineText = string(bytes.ReplaceAll([]byte(firstLineText), []byte{0x00}, []byte("\n")))
 
 	envValue.Value = firstLineText
 	if firstLineText == "" {
