@@ -85,7 +85,7 @@ func readEnvFile(dirPath, fileName string) (envValue EnvValue, err error) {
 		}
 	}
 
-	firstLineText = strings.TrimRight(firstLineText, " ")
+	firstLineText = strings.TrimRight(firstLineText, " \t")
 	firstLineText = string(bytes.ReplaceAll([]byte(firstLineText), []byte{0x00}, []byte("\n")))
 
 	envValue.Value = firstLineText

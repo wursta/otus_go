@@ -13,7 +13,7 @@ func TestReadDir(t *testing.T) {
 		expected Environment
 	}{
 		{
-			name:    "Directory exists",
+			name:    "Directory env",
 			dirPath: "./testdata/env",
 			expected: Environment{
 				"BAR": EnvValue{
@@ -30,6 +30,15 @@ func TestReadDir(t *testing.T) {
 				},
 				"UNSET": EnvValue{
 					NeedRemove: true,
+				},
+			},
+		},
+		{
+			name:    "Directory env2",
+			dirPath: "./testdata/env2",
+			expected: Environment{
+				"TAB": EnvValue{
+					Value: "ddd",
 				},
 			},
 		},
@@ -57,6 +66,10 @@ func TestErrReadDir(t *testing.T) {
 		{
 			name:    "Directory without env files #2",
 			dirPath: "./",
+		},
+		{
+			name:    "Directory with unsupported files",
+			dirPath: "./testdata/env3",
 		},
 	}
 
