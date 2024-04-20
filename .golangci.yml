@@ -8,6 +8,9 @@ linters-settings:
   funlen:
     lines: 150
     statements: 80
+  gosec:
+    excludes:
+      - G204
   depguard:
     rules:
       main:
