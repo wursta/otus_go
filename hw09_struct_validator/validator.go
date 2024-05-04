@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -93,7 +94,7 @@ func validateStruct(r reflect.Value) error {
 					err = validateStructField(
 						&validationErrors,
 						sliceFieldType,
-						fieldType.Name+" #"+fmt.Sprint(j),
+						fieldType.Name+" #"+strconv.Itoa(j),
 						fieldValue.Index(j),
 						validatorsInfo[i],
 					)
