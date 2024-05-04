@@ -18,6 +18,11 @@ linters-settings:
           - $gostd
           - github.com/cheggaaa/pb/v3
           - github.com/stretchr/testify/require
+  exhaustive:
+    # Presence of "default" case in switch statements satisfies exhaustiveness,
+    # even if all enum members are not listed.
+    # Default: false
+    default-signifies-exhaustive: true
 
 issues:
   exclude-rules:
