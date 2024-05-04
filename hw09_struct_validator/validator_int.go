@@ -2,7 +2,6 @@ package hw09structvalidator
 
 import (
 	"fmt"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -46,7 +45,7 @@ func intMaxValidator(value int, params string) (err error) {
 func intInValidator(value int, params string) (err error) {
 	allowedStrs := strings.Split(params, ",")
 
-	contains := slices.Contains(allowedStrs, fmt.Sprint(value))
+	contains := sliceContains(allowedStrs, fmt.Sprint(value))
 
 	if !contains {
 		err = ErrValueNotFoundInAllowedList

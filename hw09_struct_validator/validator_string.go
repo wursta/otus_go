@@ -2,7 +2,6 @@ package hw09structvalidator
 
 import (
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -48,7 +47,7 @@ func stringRegexValidator(value, params string) (err error) {
 func stringInValidator(value, params string) (err error) {
 	allowedStrs := strings.Split(params, ",")
 
-	contains := slices.Contains(allowedStrs, value)
+	contains := sliceContains(allowedStrs, value)
 
 	if !contains {
 		err = ErrValueNotFoundInAllowedList

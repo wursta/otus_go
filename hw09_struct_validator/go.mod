@@ -1,6 +1,6 @@
 module github.com/wursta/otus_go/hw09_struct_validator
 
-go 1.21
+go 1.19
 
 require github.com/stretchr/testify v1.9.0
 
