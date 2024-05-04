@@ -35,7 +35,7 @@ type AllowedFieldTypes interface {
 }
 
 func (v ValidationErrors) Error() string {
-	var errors = make([]string, len(v))
+	errors := make([]string, len(v))
 
 	for _, k := range v {
 		errors = append(errors, fmt.Sprintf("%s: %v", k.Field, k.Err))
