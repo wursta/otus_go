@@ -37,18 +37,18 @@ type AllowedFieldTypes interface {
 func (v ValidationErrors) Error() string {
 	errors := make([]string, len(v))
 
-	for _, k := range v {
-		errors = append(errors, fmt.Sprintf("%s: %v", k.Field, k.Err))
+	for i, k := range v {
+		errors[i] = fmt.Sprintf("%s: %v", k.Field, k.Err)
 	}
 
 	return strings.Join(errors, "\n")
 }
 
 func (v ValidationErrors) Unwrap() []error {
-	errList := make([]error, 0)
+	errList := make([]error, len(v))
 
-	for _, k := range v {
-		errList = append(errList, k.Err)
+	for i, k := range v {
+		errList[i] = k.Err
 	}
 	return errList
 }
