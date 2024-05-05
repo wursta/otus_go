@@ -1,0 +1,13 @@
+goos: windows
+goarch: amd64
+                │ .\benchmark_old.txt │         .\benchmark_new.txt         │
+                │       sec/op        │   sec/op     vs base                │
+GetDomainStat-8       5473.703µ ± 18%   4.058µ ± 6%  -99.93% (p=0.000 n=10)
+
+                │ .\benchmark_old.txt │         .\benchmark_new.txt          │
+                │        B/op         │     B/op      vs base                │
+GetDomainStat-8      1536.389Ki ± 26%   6.417Ki ± 0%  -99.58% (p=0.000 n=10)
+
+                │ .\benchmark_old.txt │        .\benchmark_new.txt         │
+                │      allocs/op      │ allocs/op   vs base                │
+GetDomainStat-8        15277.00 ± 26%   26.00 ± 0%  -99.83% (p=0.000 n=10)

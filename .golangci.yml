@@ -18,6 +18,7 @@ linters-settings:
           - $gostd
           - github.com/cheggaaa/pb/v3
           - github.com/stretchr/testify/require
+          - github.com/mailru/easyjson
   exhaustive:
     # Presence of "default" case in switch statements satisfies exhaustiveness,
     # even if all enum members are not listed.
