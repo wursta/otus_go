@@ -12,7 +12,7 @@ import (
 )
 
 func TestTelnetClient(t *testing.T) {
-	t.Run("basic", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		l, err := net.Listen("tcp", "127.0.0.1:")
 		require.NoError(t, err)
 		defer func() { require.NoError(t, l.Close()) }()
@@ -61,5 +61,16 @@ func TestTelnetClient(t *testing.T) {
 		}()
 
 		wg.Wait()
+	})
+
+	t.Run("fail", func(t *testing.T) {
+		in := &bytes.Buffer{}
+		out := &bytes.Buffer{}
+
+		timeout, err := time.ParseDuration("5s")
+		require.NoError(t, err)
+
+		client := NewTelnetClient("unknown", timeout, io.NopCloser(in), out)
+		require.Error(t, client.Connect())
 	})
 }
