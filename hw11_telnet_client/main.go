@@ -31,7 +31,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	client := NewTelnetClient(net.JoinHostPort(host, port), timeout, os.Stdin, os.Stderr)
+	client := NewTelnetClient(net.JoinHostPort(host, port), timeout, os.Stdin, os.Stdout)
 	if err := client.Connect(); err != nil {
 		log.Printf("...Failed to connect: %v", err)
 		return
@@ -58,7 +58,7 @@ func main() {
 	<-ctx.Done()
 
 	if err := client.Close(); err != nil {
-		log.Printf("..Failed to close client: %v", err)
+		log.Printf("...Failed to close client: %v", err)
 		return
 	}
 }
