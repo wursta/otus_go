@@ -33,7 +33,7 @@ func main() {
 
 	client := NewTelnetClient(net.JoinHostPort(host, port), timeout, os.Stdin, os.Stdout)
 	if err := client.Connect(); err != nil {
-		log.Printf("...Failed to connect: %v", err)
+		log.Printf("Failed to connect: %v", err)
 		return
 	}
 
@@ -44,7 +44,7 @@ func main() {
 			return
 		}
 
-		log.Print("...EOF")
+		log.Print("EOF")
 	}()
 
 	go func() {
@@ -52,13 +52,13 @@ func main() {
 		if err := client.Receive(); err != nil {
 			return
 		}
-		log.Print("...Connection was closed by peer")
+		log.Print("Connection was closed by peer")
 	}()
 
 	<-ctx.Done()
 
 	if err := client.Close(); err != nil {
-		log.Printf("...Failed to close client: %v", err)
+		log.Printf("Failed to close client: %v", err)
 		return
 	}
 }
@@ -66,6 +66,7 @@ func main() {
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	log.SetOutput(os.Stderr)
+	log.SetPrefix("...")
 
 	pflag.DurationVar(
 		&timeout,

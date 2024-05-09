@@ -38,18 +38,22 @@ func (c *client) Connect() error {
 	}
 
 	c.connection = conn
-	log.Printf("...Connected to %s", c.address)
+	log.Printf("Connected to %s", c.address)
 
 	return nil
 }
 
 func (c *client) Send() error {
 	_, err := io.Copy(c.connection, c.in)
+
+	log.Printf("Sended to %s", c.address)
 	return err
 }
 
 func (c *client) Receive() error {
 	_, err := io.Copy(c.out, c.connection)
+
+	log.Printf("Received from %s", c.address)
 	return err
 }
 
@@ -60,6 +64,8 @@ func (c *client) Close() error {
 			return err
 		}
 		c.connection = nil
+
+		log.Printf("Connection with %s closed", c.address)
 	}
 
 	return nil
