@@ -33,6 +33,8 @@ func TestStorageCreate(t *testing.T) {
 	}
 	defer store.Close(ctx)
 
+	defer store.RemoveEvents(ctx)
+
 	err = store.CreateEvent(ctx, newEvent)
 	require.Nil(t, err)
 
@@ -71,6 +73,8 @@ func TestStorageUpdate(t *testing.T) {
 		return
 	}
 	defer store.Close(ctx)
+
+	defer store.RemoveEvents(ctx)
 
 	err = store.CreateEvent(ctx, newEvent)
 	if err != nil {
@@ -116,6 +120,8 @@ func TestStorageGet(t *testing.T) {
 	}
 	defer store.Close(ctx)
 
+	defer store.RemoveEvents(ctx)
+
 	for i := range events {
 		err = store.CreateEvent(ctx, events[i])
 		if err != nil {
@@ -144,6 +150,8 @@ func TestStorageGetEventsListByDates(t *testing.T) {
 		return
 	}
 	defer store.Close(ctx)
+
+	defer store.RemoveEvents(ctx)
 
 	uuid1 := uuid.NewString()
 	uuid2 := uuid.NewString()
@@ -214,6 +222,8 @@ func TestStorageGetEventsForNotify(t *testing.T) {
 		return
 	}
 	defer store.Close(ctx)
+
+	defer store.RemoveEvents(ctx)
 
 	uuid1 := uuid.NewString()
 	uuid2 := uuid.NewString()

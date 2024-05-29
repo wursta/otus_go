@@ -19,6 +19,7 @@ type SQLStorage struct {
 	dsn string
 	mu  sync.Mutex
 	db  *sqlx.DB
+	tx  *sqlx.Tx
 }
 
 type StorageEvent struct {
@@ -250,4 +251,17 @@ func (s *SQLStorage) GetEventsForNotify(ctx context.Context, notifyDate string) 
 		})
 	}
 	return events
+}
+
+func (s *SQLStorage) RemoveEvents(ctx context.Context) error {
+	if s.db == nil {
+		return ErrDBNotConnected
+	}
+
+	_, err := s.db.ExecContext(ctx, "DELETE FROM public.events")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
