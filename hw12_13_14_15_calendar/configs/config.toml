@@ -1,5 +1,12 @@
 [logger]
-level = "INFO"
+level = "DEBUG"
 
-# TODO
-# ...
+[storage]
+type = "postgres"
+
+[postgres]
+dsn = "postgres://calendar:calendar@localhost:5432/calendar"
+
+[server]
+host = "localhost"
+port = 8080

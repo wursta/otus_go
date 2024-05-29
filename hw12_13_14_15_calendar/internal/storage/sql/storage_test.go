@@ -1,40 +1,62 @@
-package memorystorage
+package sqlstorage
 
 import (
 	"context"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage"
 )
 
+var testDSN = "postgres://calendar:calendar@localhost:5432/calendar"
+
 func TestStorageCreate(t *testing.T) {
-	store := New()
+	store := New(testDSN)
 
 	newEvent := storage.Event{
-		ID:    "1",
-		Title: "Test",
+		ID:           uuid.NewString(),
+		CreatorID:    1,
+		Title:        "Test",
+		Description:  "Test description",
+		StartDate:    time.Now().UTC(),
+		EndDate:      time.Now().Add(time.Hour * 24 * 5).UTC(),
+		NotifyBefore: time.Hour * 24 * 1,
 	}
 	ctx := context.Background()
 
-	err := store.CreateEvent(ctx, newEvent)
+	err := store.Connect(ctx)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	defer store.Close(ctx)
+
+	err = store.CreateEvent(ctx, newEvent)
 	require.Nil(t, err)
 
 	savedEvent, err := store.GetEvent(ctx, newEvent.ID)
 	require.Nil(t, err)
-	require.Equal(t, newEvent, savedEvent)
+	require.Equal(t, newEvent.ID, savedEvent.ID)
+	require.Equal(t, newEvent.CreatorID, savedEvent.CreatorID)
+	require.Equal(t, newEvent.Title, savedEvent.Title)
+	require.Equal(t, newEvent.Description, savedEvent.Description)
+	require.Equal(t, newEvent.StartDate.Format("2006-01-02 15:04:05"), savedEvent.StartDate.Format("2006-01-02 15:04:05"))
+	require.Equal(t, newEvent.EndDate.Format("2006-01-02 15:04:05"), savedEvent.EndDate.Format("2006-01-02 15:04:05"))
+	require.Equal(t, newEvent.NotifyBefore, savedEvent.NotifyBefore)
 
 	err = store.CreateEvent(ctx, newEvent)
 	require.Equal(t, storage.ErrCreateEventIDExists, err)
 }
 
 func TestStorageUpdate(t *testing.T) {
-	store := New()
+	store := New(testDSN)
 
 	startDate := time.Now()
 	newEvent := storage.Event{
-		ID:           "1",
+		ID:           uuid.NewString(),
+		CreatorID:    1,
 		Title:        "Test",
 		Description:  "Test Description",
 		StartDate:    startDate,
@@ -43,7 +65,14 @@ func TestStorageUpdate(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	err := store.CreateEvent(ctx, newEvent)
+	err := store.Connect(ctx)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	defer store.Close(ctx)
+
+	err = store.CreateEvent(ctx, newEvent)
 	if err != nil {
 		t.Fail()
 	}
@@ -62,28 +91,36 @@ func TestStorageUpdate(t *testing.T) {
 }
 
 func TestStorageGet(t *testing.T) {
-	store := New()
+	store := New(testDSN)
 
 	events := []storage.Event{
 		{
-			ID:    "1",
+			ID:    uuid.NewString(),
 			Title: "Test",
 		},
 		{
-			ID:    "2",
+			ID:    uuid.NewString(),
 			Title: "Test 2",
 		},
 		{
-			ID:    "3",
+			ID:    uuid.NewString(),
 			Title: "Test 3",
 		},
 	}
 
 	ctx := context.Background()
+	err := store.Connect(ctx)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	defer store.Close(ctx)
+
 	for i := range events {
-		err := store.CreateEvent(ctx, events[i])
+		err = store.CreateEvent(ctx, events[i])
 		if err != nil {
 			t.Fatal(err)
+			return
 		}
 	}
 
@@ -93,19 +130,29 @@ func TestStorageGet(t *testing.T) {
 		require.Equal(t, event, events[i])
 	}
 
-	_, err := store.GetEvent(ctx, "4")
+	_, err = store.GetEvent(ctx, uuid.NewString())
 	require.Equal(t, storage.ErrReadEventNotExists, err)
 }
 
 func TestStorageGetEventsListByDates(t *testing.T) {
-	store := New()
+	store := New(testDSN)
 
 	ctx := context.Background()
+	err := store.Connect(ctx)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	defer store.Close(ctx)
+
+	uuid1 := uuid.NewString()
+	uuid2 := uuid.NewString()
+	uuid3 := uuid.NewString()
 
 	startDate, _ := time.Parse("2006-01-02", "2024-05-26")
 	endDate, _ := time.Parse("2006-01-02", "2024-06-26")
-	err := store.CreateEvent(ctx, storage.Event{
-		ID:           "1",
+	err = store.CreateEvent(ctx, storage.Event{
+		ID:           uuid1,
 		Title:        "Test",
 		Description:  "Test Description",
 		StartDate:    startDate,
@@ -119,7 +166,7 @@ func TestStorageGetEventsListByDates(t *testing.T) {
 	startDate, _ = time.Parse("2006-01-02", "2024-04-18")
 	endDate, _ = time.Parse("2006-01-02", "2024-05-18")
 	err = store.CreateEvent(ctx, storage.Event{
-		ID:           "2",
+		ID:           uuid2,
 		Title:        "Test 2",
 		Description:  "Test Description 2",
 		StartDate:    startDate,
@@ -133,7 +180,7 @@ func TestStorageGetEventsListByDates(t *testing.T) {
 	startDate, _ = time.Parse("2006-01-02", "2024-04-20")
 	endDate, _ = time.Parse("2006-01-02", "2024-07-22")
 	err = store.CreateEvent(ctx, storage.Event{
-		ID:           "3",
+		ID:           uuid3,
 		Title:        "Test 3",
 		Description:  "Test Description 3",
 		StartDate:    startDate,
@@ -144,27 +191,38 @@ func TestStorageGetEventsListByDates(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fromDate, _ := time.Parse("2006-01-02", "2024-05-20")
-	toDate, _ := time.Parse("2006-01-02", "2024-05-28")
+	fromDate, _ := time.Parse("2006-01-02", "2024-04-17")
+	toDate, _ := time.Parse("2006-01-02", "2024-06-26")
 	events := store.GetEventsListByDates(ctx, &fromDate, &toDate)
 
 	require.Equal(t, 2, len(events))
-	require.Equal(t, "1", events[0].ID)
-	require.Equal(t, "3", events[1].ID)
+	require.Equal(t, uuid1, events[0].ID)
+	require.Equal(t, uuid2, events[1].ID)
 
 	events = store.GetEventsListByDates(ctx, nil, nil)
 	require.Equal(t, 3, len(events))
 }
 
 func TestStorageGetEventsForNotify(t *testing.T) {
-	store := New()
+	store := New(testDSN)
 
 	ctx := context.Background()
 
+	err := store.Connect(ctx)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	defer store.Close(ctx)
+
+	uuid1 := uuid.NewString()
+	uuid2 := uuid.NewString()
+	uuid3 := uuid.NewString()
+
 	startDate, _ := time.Parse("2006-01-02", "2024-05-26")
 	endDate, _ := time.Parse("2006-01-02 15:04:05", "2024-06-26 23:59:59")
-	err := store.CreateEvent(ctx, storage.Event{
-		ID:           "1",
+	err = store.CreateEvent(ctx, storage.Event{
+		ID:           uuid1,
 		Title:        "Test",
 		Description:  "Test Description",
 		StartDate:    startDate,
@@ -178,7 +236,7 @@ func TestStorageGetEventsForNotify(t *testing.T) {
 	startDate, _ = time.Parse("2006-01-02", "2024-04-18")
 	endDate, _ = time.Parse("2006-01-02 15:04:05", "2024-05-18 23:59:59")
 	err = store.CreateEvent(ctx, storage.Event{
-		ID:           "2",
+		ID:           uuid2,
 		Title:        "Test 2",
 		Description:  "Test Description 2",
 		StartDate:    startDate,
@@ -192,7 +250,7 @@ func TestStorageGetEventsForNotify(t *testing.T) {
 	startDate, _ = time.Parse("2006-01-02", "2024-04-20")
 	endDate, _ = time.Parse("2006-01-02 15:04:05", "2024-07-22 23:59:59")
 	err = store.CreateEvent(ctx, storage.Event{
-		ID:           "3",
+		ID:           uuid3,
 		Title:        "Test 3",
 		Description:  "Test Description 3",
 		StartDate:    startDate,
@@ -205,13 +263,13 @@ func TestStorageGetEventsForNotify(t *testing.T) {
 
 	events := store.GetEventsForNotify(ctx, "2024-06-25")
 	require.Equal(t, 1, len(events))
-	require.Equal(t, "1", events[0].ID)
+	require.Equal(t, uuid1, events[0].ID)
 
 	events = store.GetEventsForNotify(ctx, "2024-05-16")
 	require.Equal(t, 1, len(events))
-	require.Equal(t, "2", events[0].ID)
+	require.Equal(t, uuid2, events[0].ID)
 
 	events = store.GetEventsForNotify(ctx, "2024-07-19")
 	require.Equal(t, 1, len(events))
-	require.Equal(t, "3", events[0].ID)
+	require.Equal(t, uuid3, events[0].ID)
 }

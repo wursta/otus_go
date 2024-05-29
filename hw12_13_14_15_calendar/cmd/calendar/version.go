@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	release   = "UNKNOWN"
-	buildDate = "UNKNOWN"
-	gitHash   = "UNKNOWN"
+	release   string
+	buildDate string
+	gitHash   string
 )
 
 func printVersion() {
