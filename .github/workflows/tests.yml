@@ -69,15 +69,13 @@ jobs:
         image: postgres
         env:
           POSTGRES_DB: calendar
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: calendar
+          POSTGRES_PASSWORD: calendar
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
-        volumes: 
-         - ./hw12_13_14_15_calendar/migrations:/docker-entrypoint-initdb.d/
+          --health-retries 5        
         ports:          
           - 5432:5432
 
@@ -90,8 +88,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # - name: Migrate db        
-      #   run: psql -h localhost -U postgres -d calendar < ./hw12_13_14_15_calendar/migrations/0001_create_events_table.sql
+       - name: Init database
+         run: psql -h localhost -U calendar -d calendar -f ./hw12_13_14_15_calendar/migrations/0001_create_events_table.sql
 
       - name: make lint
         run: make lint
