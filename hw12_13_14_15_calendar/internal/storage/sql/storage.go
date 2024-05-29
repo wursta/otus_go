@@ -19,7 +19,6 @@ type SQLStorage struct {
 	dsn string
 	mu  sync.Mutex
 	db  *sqlx.DB
-	tx  *sqlx.Tx
 }
 
 type StorageEvent struct {
