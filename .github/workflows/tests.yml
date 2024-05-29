@@ -71,6 +71,7 @@ jobs:
           POSTGRES_DB: calendar
           POSTGRES_USER: calendar
           POSTGRES_PASSWORD: calendar
+          POSTGRES_HOST_AUTH_METHOD: trust
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -89,7 +90,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Init database        
-        run: psql --host=localhost --username=calendar --no-password --dbname=calendar -f ./migrations/0001_create_events_table.sql
+        run: psql --host=localhost --username=calendar --dbname=calendar -f ./migrations/0001_create_events_table.sql
         working-directory: hw12_13_14_15_calendar
 
       - name: make lint
