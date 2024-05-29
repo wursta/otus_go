@@ -64,20 +64,20 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.ref, 'calendar')
     
-    # services:
-    #   postgres: 
-    #     image: postgres
-    #     env:
-    #       POSTGRES_DB: calendar
-    #       POSTGRES_USER: calendar
-    #       POSTGRES_PASSWORD: calendar
-    #     options: >-
-    #       --health-cmd pg_isready
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5        
-    #     ports:          
-    #       - 5432:5432
+    services:
+      postgres: 
+        image: postgres
+        env:
+          POSTGRES_DB: calendar
+          POSTGRES_USER: calendar
+          POSTGRES_PASSWORD: calendar
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5        
+        ports:          
+          - 5432:5432
 
     steps:
       - name: Set up Go
@@ -88,15 +88,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Init database
-        uses: yakubique/postgresql-apply-migrations@v1.1
-        with:
-          migrations: './hw12_13_14_15_calendar/migrations'
-          host: localhost
-          username: calendar
-          password: calendar
-          db: calendar
-        #run: psql -h localhost -U calendar -d calendar -Wcalendar -f ./hw12_13_14_15_calendar/migrations/0001_create_events_table.sql
+      - name: Init database        
+        run: psql --host=localhost --username=calendar --password=calendar --dbname=calendar -f ./migrations/0001_create_events_table.sql
+        working-directory: hw12_13_14_15_calendar
 
       - name: make lint
         run: make lint
