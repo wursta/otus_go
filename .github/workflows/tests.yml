@@ -89,7 +89,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Init database
-        run: psql -h localhost -U calendar -d calendar -f ./hw12_13_14_15_calendar/migrations/0001_create_events_table.sql
+        run: psql -h localhost -U calendar -d calendar -Wcalendar -f ./hw12_13_14_15_calendar/migrations/0001_create_events_table.sql
 
       - name: make lint
         run: make lint
