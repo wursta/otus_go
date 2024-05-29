@@ -71,6 +71,7 @@ jobs:
           POSTGRES_DB: calendar
           POSTGRES_USER: calendar
           POSTGRES_PASSWORD: calendar
+          POSTGRES_HOST: localhost
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
