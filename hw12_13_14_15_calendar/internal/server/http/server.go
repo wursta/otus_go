@@ -15,10 +15,11 @@ var (
 )
 
 type Server struct {
-	host   string
-	port   string
-	server *http.Server
-	mux    *http.ServeMux
+	host    string
+	port    string
+	timeout time.Duration
+	server  *http.Server
+	mux     *http.ServeMux
 }
 
 type Logger interface {
@@ -37,7 +38,7 @@ type Application interface {
 	) error
 }
 
-func NewServer(logger Logger, app Application) *Server {
+func NewServer(_ Logger, _ Application) *Server {
 	return &Server{
 		mux: http.NewServeMux(),
 	}
@@ -49,8 +50,9 @@ func (s *Server) Start(_ context.Context) error {
 	}
 	address := net.JoinHostPort(s.host, s.port)
 	s.server = &http.Server{
-		Addr:    address,
-		Handler: loggingMiddleware(s.mux),
+		Addr:              address,
+		ReadHeaderTimeout: s.timeout,
+		Handler:           loggingMiddleware(s.mux),
 	}
 
 	err := s.server.ListenAndServe()
@@ -61,7 +63,7 @@ func (s *Server) Start(_ context.Context) error {
 	return nil
 }
 
-func (s *Server) Stop(ctx context.Context) error {
+func (s *Server) Stop(_ context.Context) error {
 	if s.server == nil {
 		return ErrServerNotStarted
 	}

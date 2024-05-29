@@ -8,22 +8,20 @@ import (
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/jackc/pgx/v5/stdlib" // postgres driver
 	"github.com/jmoiron/sqlx"
 	"github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage"
 )
 
-var (
-	ErrDbNotConnected = errors.New("not connected to database")
-)
+var ErrDBNotConnected = errors.New("not connected to database")
 
-type sqlStorage struct {
+type SQLStorage struct {
 	dsn string
 	mu  sync.Mutex
 	db  *sqlx.DB
 }
 
-type sqlStorageEvent struct {
+type StorageEvent struct {
 	ID           string        `db:"id"`
 	Title        string        `db:"title"`
 	Description  string        `db:"description"`
@@ -33,13 +31,13 @@ type sqlStorageEvent struct {
 	NotifyBefore time.Duration `db:"notify_before"`
 }
 
-func New(dsn string) *sqlStorage {
-	return &sqlStorage{
+func New(dsn string) *SQLStorage {
+	return &SQLStorage{
 		dsn: dsn,
 	}
 }
 
-func (s *sqlStorage) Connect(ctx context.Context) error {
+func (s *SQLStorage) Connect(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -62,7 +60,7 @@ func (s *sqlStorage) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (s *sqlStorage) Close(ctx context.Context) error {
+func (s *SQLStorage) Close(_ context.Context) error {
 	err := s.db.Close()
 	if err != nil {
 		return err
@@ -74,9 +72,9 @@ func (s *sqlStorage) Close(ctx context.Context) error {
 	return nil
 }
 
-func (s *sqlStorage) CreateEvent(ctx context.Context, event storage.Event) error {
+func (s *SQLStorage) CreateEvent(ctx context.Context, event storage.Event) error {
 	if s.db == nil {
-		return ErrDbNotConnected
+		return ErrDBNotConnected
 	}
 
 	query := `INSERT INTO public.events (id, creator_id, title, description, start_dt, end_dt, notify_before)
@@ -104,9 +102,9 @@ func (s *sqlStorage) CreateEvent(ctx context.Context, event storage.Event) error
 	return nil
 }
 
-func (s *sqlStorage) UpdateEvent(ctx context.Context, event storage.Event) error {
+func (s *SQLStorage) UpdateEvent(ctx context.Context, event storage.Event) error {
 	if s.db == nil {
-		return ErrDbNotConnected
+		return ErrDBNotConnected
 	}
 
 	query := `UPDATE public.events SET
@@ -127,28 +125,27 @@ func (s *sqlStorage) UpdateEvent(ctx context.Context, event storage.Event) error
 		"end_dt":        event.EndDate,
 		"notify_before": event.NotifyBefore,
 	})
-
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
-func (s *sqlStorage) GetEvent(ctx context.Context, eventID string) (storage.Event, error) {
+
+func (s *SQLStorage) GetEvent(ctx context.Context, eventID string) (storage.Event, error) {
 	if s.db == nil {
-		return storage.Event{}, ErrDbNotConnected
+		return storage.Event{}, ErrDBNotConnected
 	}
 
 	query := "SELECT id, creator_id, title, description, start_dt, end_dt, notify_before FROM public.events WHERE id = :id"
 	rows, err := s.db.NamedQueryContext(ctx, query, map[string]interface{}{
 		"id": eventID,
 	})
-
 	if err != nil {
 		return storage.Event{}, err
 	}
 
-	var event sqlStorageEvent
+	var event StorageEvent
 	hasRows := rows.Next()
 	if !hasRows {
 		return storage.Event{}, storage.ErrReadEventNotExists
@@ -169,7 +166,8 @@ func (s *sqlStorage) GetEvent(ctx context.Context, eventID string) (storage.Even
 		NotifyBefore: event.NotifyBefore,
 	}, nil
 }
-func (s *sqlStorage) GetEventsListByDates(ctx context.Context, from *time.Time, to *time.Time) []storage.Event {
+
+func (s *SQLStorage) GetEventsListByDates(ctx context.Context, from *time.Time, to *time.Time) []storage.Event {
 	if s.db == nil {
 		return []storage.Event{}
 	}
@@ -192,14 +190,13 @@ func (s *sqlStorage) GetEventsListByDates(ctx context.Context, from *time.Time, 
 	}
 
 	rows, err := s.db.NamedQueryContext(ctx, query, params)
-
 	if err != nil {
 		return []storage.Event{}
 	}
 
 	events := []storage.Event{}
 	for rows.Next() {
-		var event sqlStorageEvent
+		var event StorageEvent
 		err = rows.StructScan(&event)
 
 		if err != nil {
@@ -217,7 +214,8 @@ func (s *sqlStorage) GetEventsListByDates(ctx context.Context, from *time.Time, 
 	}
 	return events
 }
-func (s *sqlStorage) GetEventsForNotify(ctx context.Context, notifyDate string) []storage.Event {
+
+func (s *SQLStorage) GetEventsForNotify(ctx context.Context, notifyDate string) []storage.Event {
 	if s.db == nil {
 		return []storage.Event{}
 	}
@@ -229,14 +227,13 @@ func (s *sqlStorage) GetEventsForNotify(ctx context.Context, notifyDate string) 
 	rows, err := s.db.NamedQueryContext(ctx, query, map[string]interface{}{
 		"notify_date": notifyDate,
 	})
-
 	if err != nil {
 		return []storage.Event{}
 	}
 
 	events := []storage.Event{}
 	for rows.Next() {
-		var event sqlStorageEvent
+		var event StorageEvent
 		err = rows.StructScan(&event)
 
 		if err != nil {

@@ -91,7 +91,7 @@ func main() {
 		_, err := w.Write([]byte("hello handler"))
 		if err != nil {
 			cancel()
-			os.Exit(1) //nolint:gocritic
+			os.Exit(1)
 		}
 	})
 

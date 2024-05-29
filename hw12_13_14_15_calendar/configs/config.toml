@@ -10,3 +10,4 @@ dsn = "postgres://calendar:calendar@localhost:5432/calendar"
 [server]
 host = "localhost"
 port = 8080
+timeout = 30

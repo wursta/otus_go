@@ -6,9 +6,7 @@ import (
 	"log"
 )
 
-var (
-	ErrUnknownLoggerLevel = errors.New("unknown logger level")
-)
+var ErrUnknownLoggerLevel = errors.New("unknown logger level")
 
 const (
 	DEBUG = iota

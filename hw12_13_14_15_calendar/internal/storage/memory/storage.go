@@ -18,18 +18,18 @@ type inMemoryEvent struct {
 	NotifyBefore time.Duration
 }
 
-type inMemoryStorage struct {
+type InMemoryStorage struct {
 	mu   sync.RWMutex
 	data map[string]inMemoryEvent
 }
 
-func New() *inMemoryStorage {
-	return &inMemoryStorage{
+func New() *InMemoryStorage {
+	return &InMemoryStorage{
 		data: map[string]inMemoryEvent{},
 	}
 }
 
-func (s *inMemoryStorage) CreateEvent(_ context.Context, event storage.Event) error {
+func (s *InMemoryStorage) CreateEvent(_ context.Context, event storage.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -43,7 +43,7 @@ func (s *inMemoryStorage) CreateEvent(_ context.Context, event storage.Event) er
 	return nil
 }
 
-func (s *inMemoryStorage) UpdateEvent(_ context.Context, event storage.Event) error {
+func (s *InMemoryStorage) UpdateEvent(_ context.Context, event storage.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -58,7 +58,7 @@ func (s *inMemoryStorage) UpdateEvent(_ context.Context, event storage.Event) er
 	return nil
 }
 
-func (s *inMemoryStorage) GetEvent(_ context.Context, eventID string) (storage.Event, error) {
+func (s *InMemoryStorage) GetEvent(_ context.Context, eventID string) (storage.Event, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -70,7 +70,7 @@ func (s *inMemoryStorage) GetEvent(_ context.Context, eventID string) (storage.E
 	return buildStorageEvent(savedEvent), nil
 }
 
-func (s *inMemoryStorage) GetEventsListByDates(_ context.Context, from *time.Time, to *time.Time) []storage.Event {
+func (s *InMemoryStorage) GetEventsListByDates(_ context.Context, from *time.Time, to *time.Time) []storage.Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -91,7 +91,7 @@ func (s *inMemoryStorage) GetEventsListByDates(_ context.Context, from *time.Tim
 	return events
 }
 
-func (s *inMemoryStorage) GetEventsForNotify(_ context.Context, notifyDate string) []storage.Event {
+func (s *InMemoryStorage) GetEventsForNotify(_ context.Context, notifyDate string) []storage.Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 

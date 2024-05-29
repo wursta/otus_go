@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/spf13/viper"
 )
 
@@ -16,8 +18,9 @@ type LoggerConf struct {
 }
 
 type ServerConf struct {
-	Host string
-	Port string
+	Host    string
+	Port    string
+	Timeout time.Duration
 }
 
 type StorageConf struct {
