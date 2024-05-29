@@ -69,8 +69,8 @@ jobs:
         image: postgres
         env:
           POSTGRES_DB: calendar
-          POSTGRES_USER: calendar
-          POSTGRES_PASSWORD: calendar
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -89,7 +89,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Migrate db        
-        run: psql -h localhost -U calendar -d calendar -W calendar < ./hw12_13_14_15_calendar/migrations/0001_create_events_table.sql
+        run: psql -h localhost -U postgres -d calendar < ./hw12_13_14_15_calendar/migrations/0001_create_events_table.sql
 
       - name: make lint
         run: make lint
