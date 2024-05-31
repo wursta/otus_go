@@ -1,0 +1,93 @@
+run:
+  tests: true
+  build-tags:
+    - bench
+    - !bench
+
+linters-settings:
+  funlen:
+    lines: 150
+    statements: 80
+  gosec:
+    excludes:
+      - G204
+  depguard:
+    rules:
+      main:
+        allow:
+          - $gostd          
+          - github.com/stretchr/testify/require          
+          - github.com/spf13/viper
+          - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/app
+          - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/logger
+          - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/server/http
+          - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage
+          - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/memory
+          - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/sql
+          - github.com/jackc/pgerrcode
+          - github.com/jackc/pgx/v5/pgconn
+          - github.com/jackc/pgx/v5/stdlib
+          - github.com/jmoiron/sqlx
+          - github.com/google/uuid
+  exhaustive:
+    # Presence of "default" case in switch statements satisfies exhaustiveness,
+    # even if all enum members are not listed.
+    # Default: false
+    default-signifies-exhaustive: true
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - dupl
+        - gocyclo
+        - gosec
+
+linters:
+  disable-all: true
+  enable:
+    - asciicheck
+    - bodyclose
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - funlen
+    - gci
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gofmt
+    - gofumpt
+    - goheader
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - importas
+    - ineffassign
+    - lll
+    - makezero
+    - misspell
+    - nestif
+    - nilerr
+    - noctx
+    - nolintlint
+    - prealloc
+    - predeclared
+    - revive
+    - staticcheck
+    - stylecheck
+    - tagliatelle
+    - thelper
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace

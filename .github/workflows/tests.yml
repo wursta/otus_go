@@ -63,14 +63,35 @@ jobs:
   tests_by_makefile:
     runs-on: ubuntu-latest
     if: contains(github.ref, 'calendar')
+    
+    services:
+      postgres: 
+        image: postgres
+        env:
+          POSTGRES_DB: calendar
+          POSTGRES_USER: calendar
+          POSTGRES_PASSWORD: calendar
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5        
+        ports:          
+          - 5432:5432
+
     steps:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: ^1.19
+          go-version: ^1.20
 
       - name: Check out code
         uses: actions/checkout@v3
+
+      - name: Init database        
+        run: psql --host=localhost --username=calendar --dbname=calendar -f ./migrations/0001_create_events_table.sql
+        working-directory: hw12_13_14_15_calendar
 
       - name: make lint
         run: make lint
