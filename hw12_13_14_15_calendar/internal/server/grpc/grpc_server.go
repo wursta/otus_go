@@ -69,6 +69,7 @@ func (s *Server) Start(_ context.Context) error {
 			loggingMiddleware(),
 		),
 	)
+
 	calendarpb.RegisterCalendarServer(s.server, s)
 	reflection.Register(s.server)
 
@@ -82,7 +83,6 @@ func (s *Server) Start(_ context.Context) error {
 
 func (s *Server) Stop(_ context.Context) error {
 	s.server.GracefulStop()
-
 	return nil
 }
 
@@ -178,7 +178,6 @@ func (s *Server) GetEventsForNotify(
 	r *calendarpb.GetEventsForNotifyRequest,
 ) (*calendarpb.GetEventsForNotifyResult, error) {
 	notifyDate := r.GetNotifyDate()
-
 	events := s.app.GetEventsForNotify(ctx, notifyDate)
 
 	resultsList := []*calendarpb.GetResult{}
