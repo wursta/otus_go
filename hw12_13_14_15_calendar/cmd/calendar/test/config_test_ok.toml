@@ -1,6 +1,19 @@
 [logger]
 level = "INFO"
 
+[storage]
+type = "inmemory"
+
+[postgres]
+dsn = "postgres://calendar:calendar@localhost:5432/calendar"
+
 [server]
+type = "grpc"
+
+[grpc]
+port = 50051
+
+[http]
 host = "localhost"
 port = 8080
+timeout = 30

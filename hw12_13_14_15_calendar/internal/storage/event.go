@@ -12,11 +12,11 @@ var (
 )
 
 type Event struct {
-	ID           string
-	Title        string
-	Description  string
-	StartDate    time.Time
-	EndDate      time.Time
-	CreatorID    int
-	NotifyBefore time.Duration
+	ID           string        `json:"id"`
+	Title        string        `json:"title"`
+	Description  string        `json:"description"`
+	StartDate    time.Time     `json:"startDt"`
+	EndDate      time.Time     `json:"endDt"`
+	CreatorID    int           `json:"creatorId"`
+	NotifyBefore time.Duration `json:"notifyBefore"`
 }

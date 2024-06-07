@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/app"
 	"github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/logger"
+	internalgrpc "github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/memory"
 	sqlstorage "github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/sql"
@@ -60,7 +60,7 @@ func main() {
 		defer sqlStorage.Close(ctx)
 		storage = sqlStorage
 	default:
-		fmt.Print("error creating storage: unknown storage")
+		fmt.Print("error creating storage: unknown storage type")
 		return
 	}
 	logg.Debug("create storage", storage)
@@ -68,7 +68,27 @@ func main() {
 	calendar := app.New(logg, storage)
 	logg.Debug("create calendar app", calendar)
 
-	server := internalhttp.NewServer(logg, calendar)
+	var server app.Server
+	switch config.Server.Type {
+	case "http":
+		server = internalhttp.NewServer(
+			logg,
+			calendar,
+			config.HTTP.Host,
+			config.HTTP.Port,
+			config.HTTP.Timeout,
+		)
+	case "grpc":
+		server = internalgrpc.NewServer(
+			logg,
+			calendar,
+			config.GRPC.Port,
+		)
+	default:
+		fmt.Print("error creating server: unknown server type")
+		return
+	}
+
 	logg.Debug("create server", server)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
@@ -82,21 +102,14 @@ func main() {
 		defer cancel()
 
 		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+			logg.Error("failed to stop server: " + err.Error())
 		}
 	}()
 
 	logg.Info("calendar is running...")
-	server.AddRoute("/hello", func(w http.ResponseWriter, r *http.Request) {
-		_, err := w.Write([]byte("hello handler"))
-		if err != nil {
-			cancel()
-			os.Exit(1)
-		}
-	})
 
 	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
+		logg.Error("failed to start server: " + err.Error())
 		cancel()
 		os.Exit(1) //nolint:gocritic
 	}

@@ -1,6 +1,6 @@
 [logger]
 level = "INFO"
 
-[server
+[http
 "localhost"
 port = 8080

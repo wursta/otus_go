@@ -2,10 +2,13 @@ BIN := "./bin/calendar"
 DOCKER_IMG="calendar:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
-LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
+LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH1)
 
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
+
+build-win:
+	GOOS=windows GOARCH=amd64 go build -v -o $(BIN).exe -ldflags "$(LDFLAGS)" ./cmd/calendar
 
 run: build
 	$(BIN) -config ./configs/config.toml
@@ -30,5 +33,8 @@ install-lint-deps:
 
 lint: install-lint-deps
 	golangci-lint run ./...
+
+protoc:
+	protoc ./internal/server/grpc/calendar.proto --go_out=./internal/server/grpc/pb --go-grpc_out=./internal/server/grpc/pb
 
 .PHONY: build run build-img run-img version test lint

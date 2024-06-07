@@ -1,0 +1,65 @@
+syntax = "proto3"; 
+package calendar; 
+option go_package = "./;calendarpb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+service Calendar {      
+    rpc Create(CreateRequest) returns (CreateResult) {  }
+    rpc Update(UpdateRequest) returns (UpdateResult) {  }
+    rpc Get(GetRequest) returns (GetResult) {  }
+    rpc GetEventsListByDates(GetEventsListByDatesRequest) returns (GetEventsListByDatesResult) {  }
+    rpc GetEventsForNotify(GetEventsForNotifyRequest) returns (GetEventsForNotifyResult) {  }
+} 
+
+message CreateRequest {
+    string id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_dt = 3;
+    google.protobuf.Timestamp end_dt = 4;
+    google.protobuf.Duration notify_before = 5;
+} 
+
+message CreateResult {
+}
+
+message UpdateRequest {
+    string id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_dt = 3;
+    google.protobuf.Timestamp end_dt = 4;
+    google.protobuf.Duration notify_before = 5;
+} 
+
+message UpdateResult {    
+}
+
+message GetRequest {
+    string id = 1;
+}
+
+message GetResult {
+    string id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_dt = 3;
+    google.protobuf.Timestamp end_dt = 4;
+    google.protobuf.Duration notify_before = 5;
+}
+
+message GetEventsListByDatesRequest {
+    google.protobuf.Timestamp from = 1;
+    google.protobuf.Timestamp to = 2;
+}
+
+message GetEventsListByDatesResult {
+    repeated GetResult list = 1;
+}
+
+message GetEventsForNotifyRequest {
+    string notifyDate = 1;
+}
+
+message GetEventsForNotifyResult {
+    repeated GetResult list = 1;
+}

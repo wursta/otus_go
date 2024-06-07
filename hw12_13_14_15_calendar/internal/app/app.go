@@ -27,6 +27,11 @@ type Storage interface {
 	GetEventsForNotify(ctx context.Context, notifyDate string) []storage.Event
 }
 
+type Server interface {
+	Start(ctx context.Context) error
+	Stop(ctx context.Context) error
+}
+
 func New(logger Logger, storage Storage) *App {
 	return &App{
 		logger:  logger,

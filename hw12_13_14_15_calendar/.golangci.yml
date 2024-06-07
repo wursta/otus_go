@@ -21,6 +21,8 @@ linters-settings:
           - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/app
           - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/logger
           - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/server/http
+          - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/server/grpc
+          - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/server/grpc/pb
           - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage
           - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/memory
           - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/sql

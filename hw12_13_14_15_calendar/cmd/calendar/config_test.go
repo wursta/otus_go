@@ -11,8 +11,8 @@ func TestNewConfigSuccess(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Equal(t, "INFO", config.Logger.Level)
-	require.Equal(t, "localhost", config.Server.Host)
-	require.Equal(t, "8080", config.Server.Port)
+	require.Equal(t, "localhost", config.HTTP.Host)
+	require.Equal(t, "8080", config.HTTP.Port)
 }
 
 func TestNewConfigError(t *testing.T) {
