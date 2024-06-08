@@ -21,10 +21,14 @@ type Logger interface {
 
 type Storage interface {
 	CreateEvent(ctx context.Context, event storage.Event) error
-	UpdateEvent(ctx context.Context, event storage.Event) error
+	UpdateEvent(ctx context.Context, eventID string, event storage.Event) error
+	DeleteEvent(ctx context.Context, eventID string) error
 	GetEvent(ctx context.Context, eventID string) (storage.Event, error)
 	GetEventsListByDates(ctx context.Context, from *time.Time, to *time.Time) []storage.Event
 	GetEventsForNotify(ctx context.Context, notifyDate string) []storage.Event
+	GetEventsOnDate(ctx context.Context, date time.Time) []storage.Event
+	GetEventsOnWeek(ctx context.Context, weekStartDate time.Time) []storage.Event
+	GetEventsOnMonth(ctx context.Context, monthStartDate time.Time) []storage.Event
 }
 
 type Server interface {
@@ -68,8 +72,8 @@ func (a *App) UpdateEvent(
 ) error {
 	return a.storage.UpdateEvent(
 		ctx,
+		id,
 		storage.Event{
-			ID:           id,
 			Title:        title,
 			StartDate:    startDate,
 			EndDate:      endDate,
@@ -77,6 +81,10 @@ func (a *App) UpdateEvent(
 			NotifyBefore: notifyBefore,
 		},
 	)
+}
+
+func (a *App) DeleteEvent(ctx context.Context, id string) error {
+	return a.storage.DeleteEvent(ctx, id)
 }
 
 func (a *App) GetEvent(ctx context.Context, id string) (storage.Event, error) {
@@ -89,4 +97,16 @@ func (a *App) GetEventsListByDates(ctx context.Context, from *time.Time, to *tim
 
 func (a *App) GetEventsForNotify(ctx context.Context, notifyDate string) []storage.Event {
 	return a.storage.GetEventsForNotify(ctx, notifyDate)
+}
+
+func (a *App) GetEventsOnDate(ctx context.Context, date time.Time) []storage.Event {
+	return a.storage.GetEventsOnDate(ctx, date)
+}
+
+func (a *App) GetEventsOnWeek(ctx context.Context, weekStartDate time.Time) []storage.Event {
+	return a.storage.GetEventsOnWeek(ctx, weekStartDate)
+}
+
+func (a *App) GetEventsOnMonth(ctx context.Context, monthStartDate time.Time) []storage.Event {
+	return a.storage.GetEventsOnMonth(ctx, monthStartDate)
 }

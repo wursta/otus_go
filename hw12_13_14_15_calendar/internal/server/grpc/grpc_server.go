@@ -30,15 +30,21 @@ type Application interface {
 
 	UpdateEvent(
 		ctx context.Context,
-		id, title string,
+		eventID string,
+		title string,
 		startDate time.Time,
 		endDate time.Time,
 		notifyBefore time.Duration,
 	) error
 
+	DeleteEvent(ctx context.Context, eventID string) error
+
 	GetEvent(ctx context.Context, id string) (storage.Event, error)
 	GetEventsListByDates(ctx context.Context, from *time.Time, to *time.Time) []storage.Event
 	GetEventsForNotify(ctx context.Context, notifyDate string) []storage.Event
+	GetEventsOnDate(ctx context.Context, date time.Time) []storage.Event
+	GetEventsOnWeek(ctx context.Context, weekStartDate time.Time) []storage.Event
+	GetEventsOnMonth(ctx context.Context, monthStartDate time.Time) []storage.Event
 }
 
 type Server struct {
@@ -109,7 +115,7 @@ func (s *Server) Create(ctx context.Context, r *calendarpb.CreateRequest) (*cale
 }
 
 func (s *Server) Update(ctx context.Context, r *calendarpb.UpdateRequest) (*calendarpb.UpdateResult, error) {
-	id := r.GetId()
+	id := r.GetEventId()
 	title := r.GetTitle()
 	startDt := r.GetStartDt().AsTime()
 	endDt := r.GetEndDt().AsTime()
@@ -128,6 +134,17 @@ func (s *Server) Update(ctx context.Context, r *calendarpb.UpdateRequest) (*cale
 	}
 
 	return &calendarpb.UpdateResult{}, nil
+}
+
+func (s *Server) Delete(ctx context.Context, r *calendarpb.DeleteRequest) (*calendarpb.DeleteResult, error) {
+	eventID := r.GetEventId()
+
+	err := s.app.DeleteEvent(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &calendarpb.DeleteResult{}, nil
 }
 
 func (s *Server) Get(ctx context.Context, r *calendarpb.GetRequest) (*calendarpb.GetResult, error) {
@@ -193,6 +210,81 @@ func (s *Server) GetEventsForNotify(
 	}
 
 	return &calendarpb.GetEventsForNotifyResult{
+		List: resultsList,
+	}, nil
+}
+
+func (s *Server) GetEventsListOnDate(
+	ctx context.Context,
+	r *calendarpb.GetEventsListOnDateRequest,
+) (*calendarpb.GetEventsListOnDateResult, error) {
+	dayDate := r.GetDayDate().AsTime()
+
+	events := s.app.GetEventsOnDate(ctx, dayDate)
+
+	resultsList := []*calendarpb.GetResult{}
+
+	for i := range events {
+		resultsList = append(resultsList, &calendarpb.GetResult{
+			Id:           events[i].ID,
+			Title:        events[i].Title,
+			StartDt:      timestamppb.New(events[i].StartDate),
+			EndDt:        timestamppb.New(events[i].EndDate),
+			NotifyBefore: durationpb.New(events[i].NotifyBefore),
+		})
+	}
+
+	return &calendarpb.GetEventsListOnDateResult{
+		List: resultsList,
+	}, nil
+}
+
+func (s *Server) GetEventsListOnWeek(
+	ctx context.Context,
+	r *calendarpb.GetEventsListOnWeekRequest,
+) (*calendarpb.GetEventsListOnWeekResult, error) {
+	weekStartDate := r.GetWeekStartDate().AsTime()
+
+	events := s.app.GetEventsOnWeek(ctx, weekStartDate)
+
+	resultsList := []*calendarpb.GetResult{}
+
+	for i := range events {
+		resultsList = append(resultsList, &calendarpb.GetResult{
+			Id:           events[i].ID,
+			Title:        events[i].Title,
+			StartDt:      timestamppb.New(events[i].StartDate),
+			EndDt:        timestamppb.New(events[i].EndDate),
+			NotifyBefore: durationpb.New(events[i].NotifyBefore),
+		})
+	}
+
+	return &calendarpb.GetEventsListOnWeekResult{
+		List: resultsList,
+	}, nil
+}
+
+func (s *Server) GetEventsListOnMonth(
+	ctx context.Context,
+	r *calendarpb.GetEventsListOnMonthRequest,
+) (*calendarpb.GetEventsListOnMonthResult, error) {
+	weekStartDate := r.GetMonthStartDate().AsTime()
+
+	events := s.app.GetEventsOnMonth(ctx, weekStartDate)
+
+	resultsList := []*calendarpb.GetResult{}
+
+	for i := range events {
+		resultsList = append(resultsList, &calendarpb.GetResult{
+			Id:           events[i].ID,
+			Title:        events[i].Title,
+			StartDt:      timestamppb.New(events[i].StartDate),
+			EndDt:        timestamppb.New(events[i].EndDate),
+			NotifyBefore: durationpb.New(events[i].NotifyBefore),
+		})
+	}
+
+	return &calendarpb.GetEventsListOnMonthResult{
 		List: resultsList,
 	}, nil
 }

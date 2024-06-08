@@ -102,7 +102,7 @@ func (s *SQLStorage) CreateEvent(ctx context.Context, event storage.Event) error
 	return nil
 }
 
-func (s *SQLStorage) UpdateEvent(ctx context.Context, event storage.Event) error {
+func (s *SQLStorage) UpdateEvent(ctx context.Context, eventID string, event storage.Event) error {
 	if s.db == nil {
 		return ErrDBNotConnected
 	}
@@ -114,16 +114,33 @@ func (s *SQLStorage) UpdateEvent(ctx context.Context, event storage.Event) error
 			   start_dt = :start_dt, 
 			   end_dt = :end_dt, 
 			   notify_before = :notify_before
-			WHERE id = :id`
+			WHERE id = :event_id`
 
 	_, err := s.db.NamedExecContext(ctx, query, map[string]interface{}{
-		"id":            event.ID,
 		"creator_id":    event.CreatorID,
 		"title":         event.Title,
 		"description":   event.Description,
 		"start_dt":      event.StartDate,
 		"end_dt":        event.EndDate,
 		"notify_before": event.NotifyBefore,
+		"event_id":      eventID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *SQLStorage) DeleteEvent(ctx context.Context, eventID string) error {
+	if s.db == nil {
+		return ErrDBNotConnected
+	}
+
+	query := "DELETE FROM public.events WHERE id = :event_id"
+
+	_, err := s.db.NamedExecContext(ctx, query, map[string]interface{}{
+		"event_id": eventID,
 	})
 	if err != nil {
 		return err
@@ -226,6 +243,123 @@ func (s *SQLStorage) GetEventsForNotify(ctx context.Context, notifyDate string) 
 
 	rows, err := s.db.NamedQueryContext(ctx, query, map[string]interface{}{
 		"notify_date": notifyDate,
+	})
+	if err != nil {
+		return []storage.Event{}
+	}
+
+	events := []storage.Event{}
+	for rows.Next() {
+		var event StorageEvent
+		err = rows.StructScan(&event)
+
+		if err != nil {
+			continue
+		}
+		events = append(events, storage.Event{
+			ID:           event.ID,
+			CreatorID:    event.CreatorID,
+			Title:        event.Title,
+			Description:  event.Description,
+			StartDate:    event.StartDate,
+			EndDate:      event.EndDate,
+			NotifyBefore: event.NotifyBefore,
+		})
+	}
+	return events
+}
+
+func (s *SQLStorage) GetEventsOnDate(ctx context.Context, date time.Time) []storage.Event {
+	if s.db == nil {
+		return []storage.Event{}
+	}
+
+	query := `SELECT id, creator_id, title, description, start_dt, end_dt, notify_before
+			  FROM public.events
+			  where cast(start_dt as date) = :start_dt`
+
+	rows, err := s.db.NamedQueryContext(ctx, query, map[string]interface{}{
+		"start_dt": date.Format(time.DateOnly),
+	})
+	if err != nil {
+		return []storage.Event{}
+	}
+
+	events := []storage.Event{}
+	for rows.Next() {
+		var event StorageEvent
+		err = rows.StructScan(&event)
+
+		if err != nil {
+			continue
+		}
+		events = append(events, storage.Event{
+			ID:           event.ID,
+			CreatorID:    event.CreatorID,
+			Title:        event.Title,
+			Description:  event.Description,
+			StartDate:    event.StartDate,
+			EndDate:      event.EndDate,
+			NotifyBefore: event.NotifyBefore,
+		})
+	}
+	return events
+}
+
+func (s *SQLStorage) GetEventsOnWeek(ctx context.Context, weekStartDate time.Time) []storage.Event {
+	if s.db == nil {
+		return []storage.Event{}
+	}
+
+	query := `SELECT id, creator_id, title, description, start_dt, end_dt, notify_before
+			  FROM public.events
+			  where start_dt >= :week_start_dt and end_dt <= :week_end_dt`
+
+	weekEndDate := weekStartDate.Add(time.Hour * 24 * 6)
+
+	rows, err := s.db.NamedQueryContext(ctx, query, map[string]interface{}{
+		"week_start_dt": weekStartDate,
+		"week_end_dt":   weekEndDate,
+	})
+	if err != nil {
+		return []storage.Event{}
+	}
+
+	events := []storage.Event{}
+	for rows.Next() {
+		var event StorageEvent
+		err = rows.StructScan(&event)
+
+		if err != nil {
+			continue
+		}
+		events = append(events, storage.Event{
+			ID:           event.ID,
+			CreatorID:    event.CreatorID,
+			Title:        event.Title,
+			Description:  event.Description,
+			StartDate:    event.StartDate,
+			EndDate:      event.EndDate,
+			NotifyBefore: event.NotifyBefore,
+		})
+	}
+	return events
+}
+
+func (s *SQLStorage) GetEventsOnMonth(ctx context.Context, monthStartDate time.Time) []storage.Event {
+	if s.db == nil {
+		return []storage.Event{}
+	}
+
+	query := `SELECT id, creator_id, title, description, start_dt, end_dt, notify_before
+			  FROM public.events
+			  where start_dt >= :month_start_dt and end_dt <= :month_end_dt`
+
+	monthEndDate := monthStartDate.AddDate(0, 1, -1)
+
+	rows, err := s.db.NamedQueryContext(ctx, query, map[string]interface{}{
+		"month_start_dt": monthStartDate,
+		"month_end_dt":   monthEndDate,
 	})
 	if err != nil {
 		return []storage.Event{}

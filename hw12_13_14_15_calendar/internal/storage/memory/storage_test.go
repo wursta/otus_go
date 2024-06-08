@@ -49,7 +49,7 @@ func TestStorageUpdate(t *testing.T) {
 	}
 	newEvent.Title = "Test Test"
 	newEvent.Description = "Test Description Test"
-	err = store.UpdateEvent(ctx, newEvent)
+	err = store.UpdateEvent(ctx, newEvent.ID, newEvent)
 	require.Nil(t, err)
 
 	savedEvent, err := store.GetEvent(ctx, newEvent.ID)
@@ -59,6 +59,46 @@ func TestStorageUpdate(t *testing.T) {
 
 	require.Equal(t, "Test Test", savedEvent.Title)
 	require.Equal(t, "Test Description Test", savedEvent.Description)
+}
+
+func TestStorageDelete(t *testing.T) {
+	store := New()
+
+	events := []storage.Event{
+		{
+			ID:    "1",
+			Title: "Test",
+		},
+		{
+			ID:    "2",
+			Title: "Test 2",
+		},
+		{
+			ID:    "3",
+			Title: "Test 3",
+		},
+	}
+
+	ctx := context.Background()
+
+	for i := range events {
+		err := store.CreateEvent(ctx, events[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	_, err := store.GetEvent(ctx, events[1].ID)
+	require.Nil(t, err)
+
+	err = store.DeleteEvent(ctx, events[1].ID)
+	require.Nil(t, err)
+
+	_, err = store.GetEvent(ctx, events[1].ID)
+	require.NotNil(t, err)
+
+	err = store.DeleteEvent(ctx, events[1].ID)
+	require.Nil(t, err)
 }
 
 func TestStorageGet(t *testing.T) {
@@ -214,4 +254,123 @@ func TestStorageGetEventsForNotify(t *testing.T) {
 	events = store.GetEventsForNotify(ctx, "2024-07-19")
 	require.Equal(t, 1, len(events))
 	require.Equal(t, "3", events[0].ID)
+}
+
+func TestGetEventsOnDate(t *testing.T) {
+	store := New()
+
+	ctx := context.Background()
+
+	startDate, _ := time.Parse(time.DateOnly, "2024-06-03")
+	endDate, _ := time.Parse(time.DateOnly, "2024-06-05")
+	err := store.CreateEvent(ctx, storage.Event{
+		ID:           "1",
+		Title:        "Test",
+		Description:  "Test Description",
+		StartDate:    startDate,
+		EndDate:      endDate,
+		NotifyBefore: time.Hour * 24 * 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	events := store.GetEventsOnWeek(ctx, startDate)
+	require.Equal(t, 1, len(events))
+	require.Equal(t, "1", events[0].ID)
+}
+
+func TestGetEventsOnWeek(t *testing.T) {
+	store := New()
+
+	ctx := context.Background()
+
+	startDate, _ := time.Parse(time.DateOnly, "2024-06-03")
+	endDate, _ := time.Parse(time.DateOnly, "2024-06-05")
+	err := store.CreateEvent(ctx, storage.Event{
+		ID:           "1",
+		Title:        "Test",
+		Description:  "Test Description",
+		StartDate:    startDate,
+		EndDate:      endDate,
+		NotifyBefore: time.Hour * 24 * 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	startDate, _ = time.Parse(time.DateOnly, "2024-06-05")
+	endDate, _ = time.Parse(time.DateOnly, "2024-06-12")
+	err = store.CreateEvent(ctx, storage.Event{
+		ID:           "2",
+		Title:        "Test 2",
+		Description:  "Test Description 2",
+		StartDate:    startDate,
+		EndDate:      endDate,
+		NotifyBefore: time.Hour * 24 * 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	weekStartDate, _ := time.Parse(time.DateOnly, "2024-06-03")
+
+	events := store.GetEventsOnWeek(ctx, weekStartDate)
+	require.Equal(t, 1, len(events))
+	require.Equal(t, "1", events[0].ID)
+}
+
+func TestGetEventsOnMonth(t *testing.T) {
+	store := New()
+
+	ctx := context.Background()
+
+	startDate, _ := time.Parse(time.DateOnly, "2024-06-03")
+	endDate, _ := time.Parse(time.DateOnly, "2024-06-05")
+	err := store.CreateEvent(ctx, storage.Event{
+		ID:           "1",
+		Title:        "Test",
+		Description:  "Test Description",
+		StartDate:    startDate,
+		EndDate:      endDate,
+		NotifyBefore: time.Hour * 24 * 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	startDate, _ = time.Parse(time.DateOnly, "2024-06-05")
+	endDate, _ = time.Parse(time.DateOnly, "2024-06-12")
+	err = store.CreateEvent(ctx, storage.Event{
+		ID:           "2",
+		Title:        "Test 2",
+		Description:  "Test Description 2",
+		StartDate:    startDate,
+		EndDate:      endDate,
+		NotifyBefore: time.Hour * 24 * 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	startDate, _ = time.Parse(time.DateOnly, "2024-06-20")
+	endDate, _ = time.Parse(time.DateOnly, "2024-07-05")
+	err = store.CreateEvent(ctx, storage.Event{
+		ID:           "3",
+		Title:        "Test 3",
+		Description:  "Test Description 3",
+		StartDate:    startDate,
+		EndDate:      endDate,
+		NotifyBefore: time.Hour * 24 * 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	weekStartDate, _ := time.Parse(time.DateOnly, "2024-06-01")
+
+	events := store.GetEventsOnMonth(ctx, weekStartDate)
+	require.Equal(t, 2, len(events))
+	require.Equal(t, "1", events[0].ID)
+	require.Equal(t, "2", events[1].ID)
 }

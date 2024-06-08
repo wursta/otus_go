@@ -8,9 +8,13 @@ import "google/protobuf/duration.proto";
 service Calendar {      
     rpc Create(CreateRequest) returns (CreateResult) {  }
     rpc Update(UpdateRequest) returns (UpdateResult) {  }
+    rpc Delete(DeleteRequest) returns (DeleteResult) {  }
     rpc Get(GetRequest) returns (GetResult) {  }
     rpc GetEventsListByDates(GetEventsListByDatesRequest) returns (GetEventsListByDatesResult) {  }
     rpc GetEventsForNotify(GetEventsForNotifyRequest) returns (GetEventsForNotifyResult) {  }
+    rpc GetEventsListOnDate(GetEventsListOnDateRequest) returns (GetEventsListOnDateResult) {  }
+    rpc GetEventsListOnWeek(GetEventsListOnWeekRequest) returns (GetEventsListOnWeekResult) {  }
+    rpc GetEventsListOnMonth(GetEventsListOnMonthRequest) returns (GetEventsListOnMonthResult) {  }
 } 
 
 message CreateRequest {
@@ -25,7 +29,7 @@ message CreateResult {
 }
 
 message UpdateRequest {
-    string id = 1;
+    string eventId = 1;
     string title = 2;
     google.protobuf.Timestamp start_dt = 3;
     google.protobuf.Timestamp end_dt = 4;
@@ -33,6 +37,14 @@ message UpdateRequest {
 } 
 
 message UpdateResult {    
+}
+
+message DeleteRequest {
+    string eventId = 1;
+}
+
+message DeleteResult {
+
 }
 
 message GetRequest {
@@ -61,5 +73,29 @@ message GetEventsForNotifyRequest {
 }
 
 message GetEventsForNotifyResult {
+    repeated GetResult list = 1;
+}
+
+message GetEventsListOnDateRequest {
+    google.protobuf.Timestamp day_date = 1;
+}
+
+message GetEventsListOnDateResult {
+    repeated GetResult list = 1;
+}
+
+message GetEventsListOnWeekRequest {
+    google.protobuf.Timestamp weekStartDate = 1;
+}
+
+message GetEventsListOnWeekResult {
+    repeated GetResult list = 1;
+}
+
+message GetEventsListOnMonthRequest {
+    google.protobuf.Timestamp monthStartDate = 1;
+}
+
+message GetEventsListOnMonthResult {
     repeated GetResult list = 1;
 }

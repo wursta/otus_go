@@ -44,15 +44,19 @@ type Application interface {
 
 	UpdateEvent(
 		ctx context.Context,
-		id, title string,
+		eventID string,
+		title string,
 		startDate time.Time,
 		endDate time.Time,
 		notifyBefore time.Duration,
 	) error
-
+	DeleteEvent(ctx context.Context, eventID string) error
 	GetEvent(ctx context.Context, id string) (storage.Event, error)
 	GetEventsListByDates(ctx context.Context, from *time.Time, to *time.Time) []storage.Event
 	GetEventsForNotify(ctx context.Context, notifyDate string) []storage.Event
+	GetEventsOnDate(ctx context.Context, date time.Time) []storage.Event
+	GetEventsOnWeek(ctx context.Context, weekStartDate time.Time) []storage.Event
+	GetEventsOnMonth(ctx context.Context, monthStartDate time.Time) []storage.Event
 }
 
 func NewServer(logg Logger, app Application, host string, port string, timeout time.Duration) *Server {
@@ -68,9 +72,13 @@ func NewServer(logg Logger, app Application, host string, port string, timeout t
 	server.AddRoute("/hello", server.Hello)
 	server.AddRoute("/event/create", server.CreateEventHandler)
 	server.AddRoute("/event/update", server.UpdateEventHandler)
+	server.AddRoute("/event/delete", server.DeleteEventHandler)
 	server.AddRoute("/event/get", server.GetEventHandler)
 	server.AddRoute("/event/listByDates", server.GetListByDatesHandler)
 	server.AddRoute("/event/listByNotifyDate", server.GetListByNotifyDateHandler)
+	server.AddRoute("/event/listOnDate", server.GetListOnDateHandler)
+	server.AddRoute("/event/listOnWeek", server.GetListOnWeekHandler)
+	server.AddRoute("/event/listOnMonth", server.GetListOnMonthHandler)
 
 	return server
 }
@@ -190,6 +198,16 @@ func (s *Server) UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
 		notifyBefore,
 	)
 
+	if err != nil {
+		s.logger.Error(err.Error())
+		s.badRequest(w, err)
+	}
+}
+
+func (s *Server) DeleteEventHandler(w http.ResponseWriter, r *http.Request) {
+	id := r.PostFormValue("id")
+
+	err := s.app.DeleteEvent(r.Context(), id)
 	if err != nil {
 		s.logger.Error(err.Error())
 		s.badRequest(w, err)
@@ -316,6 +334,108 @@ func (s *Server) GetListByNotifyDateHandler(w http.ResponseWriter, r *http.Reque
 	if writeErr != nil {
 		s.logger.Error(writeErr.Error())
 	}
+}
+
+func (s *Server) GetListOnDateHandler(w http.ResponseWriter, r *http.Request) {
+	if !r.URL.Query().Has("date") {
+		s.badRequest(w, errors.New("date not passed"))
+		return
+	}
+
+	date, err := time.Parse(time.DateOnly, r.URL.Query().Get("date"))
+	if err != nil {
+		s.badRequest(w, errors.New("date invalid format"))
+	}
+
+	events := s.app.GetEventsOnDate(r.Context(), date)
+
+	jsonStr, err := buildEventsJSON(events)
+	if err != nil {
+		s.internalError(w, err)
+		return
+	}
+
+	_, writeErr := w.Write([]byte(jsonStr))
+	if writeErr != nil {
+		s.logger.Error(writeErr.Error())
+	}
+}
+
+func (s *Server) GetListOnWeekHandler(w http.ResponseWriter, r *http.Request) {
+	if !r.URL.Query().Has("weekStartDate") {
+		s.badRequest(w, errors.New("weekStartDate not passed"))
+		return
+	}
+
+	weekStartDate, err := time.Parse(time.DateOnly, r.URL.Query().Get("weekStartDate"))
+	if err != nil {
+		s.badRequest(w, errors.New("weekStartDate invalid format"))
+	}
+
+	events := s.app.GetEventsOnWeek(r.Context(), weekStartDate)
+
+	jsonStr, err := buildEventsJSON(events)
+	if err != nil {
+		s.internalError(w, err)
+		return
+	}
+
+	_, writeErr := w.Write([]byte(jsonStr))
+	if writeErr != nil {
+		s.logger.Error(writeErr.Error())
+	}
+}
+
+func (s *Server) GetListOnMonthHandler(w http.ResponseWriter, r *http.Request) {
+	if !r.URL.Query().Has("monthStartDate") {
+		s.badRequest(w, errors.New("monthStartDate not passed"))
+		return
+	}
+
+	monthStartDate, err := time.Parse(time.DateOnly, r.URL.Query().Get("monthStartDate"))
+	if err != nil {
+		s.badRequest(w, errors.New("monthStartDate invalid format"))
+	}
+
+	events := s.app.GetEventsOnMonth(r.Context(), monthStartDate)
+
+	jsonStr, err := buildEventsJSON(events)
+	if err != nil {
+		s.internalError(w, err)
+		return
+	}
+
+	_, writeErr := w.Write([]byte(jsonStr))
+	if writeErr != nil {
+		s.logger.Error(writeErr.Error())
+	}
+}
+
+func buildEventsJSON(events []storage.Event) (string, error) {
+	b := strings.Builder{}
+	_, err := b.WriteString("[")
+	if err != nil {
+		return "", err
+	}
+
+	for i := range events {
+		jsonEvent, err := events[i].MarshalJSON()
+		if err != nil {
+			return "", err
+		}
+
+		_, err = b.WriteString(string(jsonEvent))
+		if err != nil {
+			return "", err
+		}
+	}
+
+	_, err = b.WriteString("]")
+	if err != nil {
+		return "", err
+	}
+
+	return b.String(), nil
 }
 
 func (s *Server) internalError(w http.ResponseWriter, err error) {
