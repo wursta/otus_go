@@ -68,49 +68,57 @@ func main() {
 	calendar := app.New(logg, storage)
 	logg.Debug("create calendar app", calendar)
 
-	var server app.Server
-	switch config.Server.Type {
-	case "http":
-		server = internalhttp.NewServer(
-			logg,
-			calendar,
-			config.HTTP.Host,
-			config.HTTP.Port,
-			config.HTTP.Timeout,
-		)
-	case "grpc":
-		server = internalgrpc.NewServer(
-			logg,
-			calendar,
-			config.GRPC.Port,
-		)
-	default:
-		fmt.Print("error creating server: unknown server type")
-		return
-	}
+	httpServer := internalhttp.NewServer(
+		logg,
+		calendar,
+		config.HTTP.Host,
+		config.HTTP.Port,
+		config.HTTP.Timeout,
+	)
+	logg.Debug("create http server", httpServer)
 
-	logg.Debug("create server", server)
+	grpcServer := internalgrpc.NewServer(
+		logg,
+		calendar,
+		config.GRPC.Host,
+		config.GRPC.Port,
+	)
+	logg.Debug("create grpc server", grpcServer)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
 	go func() {
-		<-ctx.Done()
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
-
-		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop server: " + err.Error())
+		if err := httpServer.Start(ctx); err != nil {
+			logg.Error("failed to start http server: " + err.Error())
+			cancel()
+			return
 		}
+
+		logg.Info("http server started...")
 	}()
 
-	logg.Info("calendar is running...")
+	go func() {
+		if err := grpcServer.Start(ctx); err != nil {
+			logg.Error("failed to start grpc server: " + err.Error())
+			cancel()
+			return
+		}
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
+		logg.Info("grpc server started...")
+	}()
+
+	<-ctx.Done()
+
+	timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer timeoutCancel()
+
+	if err := httpServer.Stop(timeoutCtx); err != nil {
+		logg.Error("failed to stop http server: " + err.Error())
+	}
+
+	if err := grpcServer.Stop(timeoutCtx); err != nil {
+		logg.Error("failed to stop grpc server: " + err.Error())
 	}
 }

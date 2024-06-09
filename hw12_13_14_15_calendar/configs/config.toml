@@ -7,10 +7,8 @@ type = "inmemory"
 [postgres]
 dsn = "postgres://calendar:calendar@localhost:5432/calendar"
 
-[server]
-type = "grpc"
-
 [grpc]
+host = "localhost"
 port = 50051
 
 [http]

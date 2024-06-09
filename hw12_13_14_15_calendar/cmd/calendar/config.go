@@ -8,7 +8,6 @@ import (
 
 type Config struct {
 	Logger   LoggerConf
-	Server   ServerConf
 	HTTP     HTTPConf
 	GRPC     GrpcConf
 	Storage  StorageConf
@@ -19,10 +18,6 @@ type LoggerConf struct {
 	Level string
 }
 
-type ServerConf struct {
-	Type string
-}
-
 type HTTPConf struct {
 	Host    string
 	Port    string
@@ -30,6 +25,7 @@ type HTTPConf struct {
 }
 
 type GrpcConf struct {
+	Host string
 	Port string
 }
 

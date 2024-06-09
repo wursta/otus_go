@@ -50,21 +50,23 @@ type Application interface {
 type Server struct {
 	logger Logger
 	app    Application
+	host   string
 	port   string
 	server *grpc.Server
 	calendarpb.UnimplementedCalendarServer
 }
 
-func NewServer(logg Logger, app Application, port string) *Server {
+func NewServer(logg Logger, app Application, host, port string) *Server {
 	return &Server{
 		logger: logg,
 		app:    app,
+		host:   host,
 		port:   port,
 	}
 }
 
 func (s *Server) Start(_ context.Context) error {
-	lsn, err := net.Listen("tcp4", net.JoinHostPort("localhost", s.port))
+	lsn, err := net.Listen("tcp4", net.JoinHostPort(s.host, s.port))
 	if err != nil {
 		s.logger.Error(err.Error())
 		return err
