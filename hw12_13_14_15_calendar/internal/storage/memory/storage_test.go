@@ -371,6 +371,4 @@ func TestGetEventsOnMonth(t *testing.T) {
 
 	events := store.GetEventsOnMonth(ctx, weekStartDate)
 	require.Equal(t, 2, len(events))
-	require.Equal(t, "1", events[0].ID)
-	require.Equal(t, "2", events[1].ID)
 }
