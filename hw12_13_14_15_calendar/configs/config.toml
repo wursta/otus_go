@@ -2,12 +2,16 @@
 level = "DEBUG"
 
 [storage]
-type = "postgres"
+type = "inmemory"
 
 [postgres]
 dsn = "postgres://calendar:calendar@localhost:5432/calendar"
 
-[server]
+[grpc]
+host = "localhost"
+port = 50051
+
+[http]
 host = "localhost"
 port = 8080
 timeout = 30

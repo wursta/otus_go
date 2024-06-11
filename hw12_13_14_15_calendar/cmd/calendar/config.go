@@ -8,7 +8,8 @@ import (
 
 type Config struct {
 	Logger   LoggerConf
-	Server   ServerConf
+	HTTP     HTTPConf
+	GRPC     GrpcConf
 	Storage  StorageConf
 	Postgres PostgresConf
 }
@@ -17,10 +18,15 @@ type LoggerConf struct {
 	Level string
 }
 
-type ServerConf struct {
+type HTTPConf struct {
 	Host    string
 	Port    string
 	Timeout time.Duration
+}
+
+type GrpcConf struct {
+	Host string
+	Port string
 }
 
 type StorageConf struct {

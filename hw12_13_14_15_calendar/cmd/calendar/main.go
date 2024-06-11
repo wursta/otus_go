@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/app"
 	"github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/logger"
+	internalgrpc "github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/memory"
 	sqlstorage "github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/sql"
@@ -60,7 +60,7 @@ func main() {
 		defer sqlStorage.Close(ctx)
 		storage = sqlStorage
 	default:
-		fmt.Print("error creating storage: unknown storage")
+		fmt.Print("error creating storage: unknown storage type")
 		return
 	}
 	logg.Debug("create storage", storage)
@@ -68,36 +68,57 @@ func main() {
 	calendar := app.New(logg, storage)
 	logg.Debug("create calendar app", calendar)
 
-	server := internalhttp.NewServer(logg, calendar)
-	logg.Debug("create server", server)
+	httpServer := internalhttp.NewServer(
+		logg,
+		calendar,
+		config.HTTP.Host,
+		config.HTTP.Port,
+		config.HTTP.Timeout,
+	)
+	logg.Debug("create http server", httpServer)
+
+	grpcServer := internalgrpc.NewServer(
+		logg,
+		calendar,
+		config.GRPC.Host,
+		config.GRPC.Port,
+	)
+	logg.Debug("create grpc server", grpcServer)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
 	go func() {
-		<-ctx.Done()
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
-
-		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+		if err := httpServer.Start(ctx); err != nil {
+			logg.Error("failed to start http server: " + err.Error())
+			cancel()
+			return
 		}
+
+		logg.Info("http server started...")
 	}()
 
-	logg.Info("calendar is running...")
-	server.AddRoute("/hello", func(w http.ResponseWriter, r *http.Request) {
-		_, err := w.Write([]byte("hello handler"))
-		if err != nil {
+	go func() {
+		if err := grpcServer.Start(ctx); err != nil {
+			logg.Error("failed to start grpc server: " + err.Error())
 			cancel()
-			os.Exit(1)
+			return
 		}
-	})
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
+		logg.Info("grpc server started...")
+	}()
+
+	<-ctx.Done()
+
+	timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer timeoutCancel()
+
+	if err := httpServer.Stop(timeoutCtx); err != nil {
+		logg.Error("failed to stop http server: " + err.Error())
+	}
+
+	if err := grpcServer.Stop(timeoutCtx); err != nil {
+		logg.Error("failed to stop grpc server: " + err.Error())
 	}
 }

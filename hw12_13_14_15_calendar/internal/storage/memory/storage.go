@@ -43,18 +43,32 @@ func (s *InMemoryStorage) CreateEvent(_ context.Context, event storage.Event) er
 	return nil
 }
 
-func (s *InMemoryStorage) UpdateEvent(_ context.Context, event storage.Event) error {
+func (s *InMemoryStorage) UpdateEvent(_ context.Context, eventID string, event storage.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	savedEvent, ok := s.data[event.ID]
+	savedEvent, ok := s.data[eventID]
 	if !ok {
 		return storage.ErrUpdateEventIDNotExists
 	}
 
 	savedEvent = patchEventData(savedEvent, event)
 
-	s.data[event.ID] = savedEvent
+	s.data[eventID] = savedEvent
+	return nil
+}
+
+func (s *InMemoryStorage) DeleteEvent(_ context.Context, eventID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	_, ok := s.data[eventID]
+	if !ok {
+		return nil
+	}
+
+	delete(s.data, eventID)
+
 	return nil
 }
 
@@ -105,6 +119,59 @@ func (s *InMemoryStorage) GetEventsForNotify(_ context.Context, notifyDate strin
 		}
 
 		events = append(events, buildStorageEvent(event))
+	}
+
+	return events
+}
+
+func (s *InMemoryStorage) GetEventsOnDate(_ context.Context, date time.Time) []storage.Event {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	events := []storage.Event{}
+
+	for _, event := range s.data {
+		if !event.StartDate.Equal(date) {
+			continue
+		}
+
+		events = append(events, buildStorageEvent(event))
+	}
+
+	return events
+}
+
+func (s *InMemoryStorage) GetEventsOnWeek(_ context.Context, weekStartDate time.Time) []storage.Event {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	weekEndDate := weekStartDate.Add(time.Hour * 24 * 6)
+
+	events := []storage.Event{}
+
+	for _, event := range s.data {
+		if (event.StartDate.Equal(weekStartDate) || event.StartDate.After(weekStartDate)) &&
+			(event.EndDate.Equal(weekEndDate) || event.EndDate.Before(weekEndDate)) {
+			events = append(events, buildStorageEvent(event))
+		}
+	}
+
+	return events
+}
+
+func (s *InMemoryStorage) GetEventsOnMonth(_ context.Context, monthStartDate time.Time) []storage.Event {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	monthEndDate := monthStartDate.AddDate(0, 1, -1)
+
+	events := []storage.Event{}
+
+	for _, event := range s.data {
+		if (event.StartDate.Equal(monthStartDate) || event.StartDate.After(monthStartDate)) &&
+			(event.EndDate.Equal(monthEndDate) || event.EndDate.Before(monthEndDate)) {
+			events = append(events, buildStorageEvent(event))
+		}
 	}
 
 	return events

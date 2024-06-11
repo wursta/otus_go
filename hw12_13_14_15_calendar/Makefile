@@ -7,6 +7,9 @@ LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%d
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
 
+build-win:
+	GOOS=windows GOARCH=amd64 go build -v -o $(BIN).exe -ldflags "$(LDFLAGS)" ./cmd/calendar
+
 run: build
 	$(BIN) -config ./configs/config.toml
 
@@ -30,5 +33,8 @@ install-lint-deps:
 
 lint: install-lint-deps
 	golangci-lint run ./...
+
+generate:
+	protoc ./internal/server/grpc/calendar.proto --go_out=./internal/server/grpc/pb --go-grpc_out=./internal/server/grpc/pb
 
 .PHONY: build run build-img run-img version test lint
