@@ -113,7 +113,8 @@ func (s *SQLStorage) UpdateEvent(ctx context.Context, eventID string, event stor
 			   description = :description, 
 			   start_dt = :start_dt, 
 			   end_dt = :end_dt, 
-			   notify_before = :notify_before
+			   notify_before = :notify_before,
+			   notified = :notified
 			WHERE id = :event_id`
 
 	_, err := s.db.NamedExecContext(ctx, query, map[string]interface{}{
@@ -123,6 +124,7 @@ func (s *SQLStorage) UpdateEvent(ctx context.Context, eventID string, event stor
 		"start_dt":      event.StartDate,
 		"end_dt":        event.EndDate,
 		"notify_before": event.NotifyBefore,
+		"notified":      event.Notified,
 		"event_id":      eventID,
 	})
 	if err != nil {
@@ -239,7 +241,8 @@ func (s *SQLStorage) GetEventsForNotify(ctx context.Context, notifyDate string) 
 
 	query := `SELECT id, creator_id, title, description, start_dt, end_dt, notify_before 
 			  FROM public.events
-			  where cast((end_dt - cast(CONCAT(notify_before/1000000, ' milliseconds') as interval)) as date) = :notify_date`
+			  WHERE cast((start_dt - cast(CONCAT(notify_before/1000000, ' milliseconds') as interval)) as date) = :notify_date
+			  AND notified IS FALSE`
 
 	rows, err := s.db.NamedQueryContext(ctx, query, map[string]interface{}{
 		"notify_date": notifyDate,

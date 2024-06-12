@@ -26,11 +26,14 @@ linters-settings:
           - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage
           - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/memory
           - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/storage/sql
+          - github.com/wursta/otus_go/hw12_13_14_15_calendar/internal/queue/rabbit
           - github.com/jackc/pgerrcode
           - github.com/jackc/pgx/v5/pgconn
           - github.com/jackc/pgx/v5/stdlib
           - github.com/jmoiron/sqlx
           - github.com/google/uuid
+          - github.com/streadway/amqp
+          - github.com/spf13/pflag
   exhaustive:
     # Presence of "default" case in switch statements satisfies exhaustiveness,
     # even if all enum members are not listed.

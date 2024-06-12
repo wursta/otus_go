@@ -19,4 +19,5 @@ type Event struct {
 	EndDate      time.Time     `json:"endDt"`
 	CreatorID    int           `json:"creatorId"`
 	NotifyBefore time.Duration `json:"notifyBefore"`
+	Notified     bool
 }

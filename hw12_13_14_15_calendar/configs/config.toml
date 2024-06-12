@@ -2,7 +2,7 @@
 level = "DEBUG"
 
 [storage]
-type = "inmemory"
+type = "postgres"
 
 [postgres]
 dsn = "postgres://calendar:calendar@localhost:5432/calendar"
@@ -15,3 +15,13 @@ port = 50051
 host = "localhost"
 port = 8080
 timeout = 30
+
+[scheduler]
+eventsNotifyCheckFrequency = "1m"
+oldEventsCleanerFrequency="1h"
+
+[rabbit]
+uri = "amqp://guest:guest@localhost:5672"
+exchange = "calendar-notify-exchange"
+queue = "calendar-notify-queue"
+
