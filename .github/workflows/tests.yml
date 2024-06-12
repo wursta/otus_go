@@ -89,8 +89,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Init database        
-        run: psql --host=localhost --username=calendar --dbname=calendar -f ./migrations/0001_create_events_table.sql
+      - name: Init database
+        run: find . -iname "./migrations/*.sql" -exec psql --host=localhost --username=calendar --dbname=calendar -f {} \;
         working-directory: hw12_13_14_15_calendar
 
       - name: make lint
