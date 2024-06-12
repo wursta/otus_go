@@ -78,6 +78,7 @@ func (p *Producer) ProduceEvent(event storage.Event) error {
 			Priority:        0,
 		},
 	)
+
 	if err != nil {
 		return fmt.Errorf("error while publishing to rabbit mq: %w", err)
 	}

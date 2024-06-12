@@ -40,6 +40,7 @@ func main() {
 
 	consumer := rabbit.NewConsumer(config.Rabbit.URI, config.Rabbit.Exchange, config.Rabbit.Queue)
 	defer consumer.Disconnect()
+
 	log.Debug("create consumer", consumer)
 
 	err = consumer.Connect()
@@ -47,6 +48,7 @@ func main() {
 		log.Error(fmt.Sprint("connect error:", err))
 		return
 	}
+
 	log.Debug("connect consumer")
 
 	deliveries, err := consumer.ConsumeEvents()
@@ -70,7 +72,9 @@ func handleEvents(log *logger.Logger, deliveries <-chan amqp.Delivery) {
 				d.Body,
 			),
 		)
+
 		d.Ack(false)
 	}
+
 	log.Debug("handle: deliveries channel closed")
 }

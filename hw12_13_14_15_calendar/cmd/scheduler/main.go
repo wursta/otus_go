@@ -44,12 +44,14 @@ func main() {
 	done := make(chan bool)
 
 	var storage app.Storage
+
 	switch config.Storage.Type {
 	case "inmemory":
 		log.Error("error creating storage: inmemory storage not allowed here")
 		return
 	case "postgres":
 		sqlStorage := sqlstorage.New(config.Postgres.Dsn)
+
 		ctx := context.Background()
 		err = sqlStorage.Connect(ctx)
 		if err != nil {
@@ -57,24 +59,29 @@ func main() {
 			return
 		}
 		defer sqlStorage.Close(ctx)
+
 		storage = sqlStorage
+
 	default:
 		log.Error("error creating storage: unknown storage type")
 		return
 	}
+
 	log.Debug("create storage", storage)
 
 	producer := rabbit.NewProducer(config.Rabbit.URI, config.Rabbit.Exchange)
-	defer producer.Disconnect()
 
 	err = producer.Connect()
 	if err != nil {
 		log.Error(fmt.Sprint("connect error:", err))
 		return
 	}
+	defer producer.Disconnect()
+
 	log.Debug("create producer and connected", producer)
 
 	wg := &sync.WaitGroup{}
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -101,6 +108,7 @@ func main() {
 	}()
 
 	<-ctx.Done()
+
 	close(done)
 
 	wg.Wait()
@@ -155,19 +163,24 @@ func runOldEventsCleaner(
 
 func checkEventsForNotify(ctx context.Context, log *logger.Logger, storage app.Storage, producer *rabbit.Producer) {
 	events := storage.GetEventsForNotify(ctx, time.Now().Format(time.DateOnly))
+
 	log.Info(fmt.Sprintf("Fetched events for notify: %d", len(events)))
 
 	for i := range events {
-		err := producer.ProduceEvent(events[i])
+		event := events[i]
+
+		err := producer.ProduceEvent(event)
+
 		if err != nil {
 			log.Error(fmt.Sprint("error consume event:", err))
 		} else {
-			event := events[i]
 			event.Notified = true
+
 			err = storage.UpdateEvent(ctx, event.ID, event)
 			if err != nil {
 				log.Error(fmt.Sprint("error updating event:", err))
 			}
+
 			log.Info("Consume event: " + events[i].ID)
 		}
 	}
