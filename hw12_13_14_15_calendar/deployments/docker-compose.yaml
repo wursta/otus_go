@@ -16,3 +16,14 @@ services:
       - 5432:5432
     volumes:
       - ./volumes/postgres:/var/lib/postgresql/data:delegated
+  
+  rabbitmq:
+    image:  rabbitmq:3-management
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    ports:
+      - 15672:15672
+      - 5672:5672

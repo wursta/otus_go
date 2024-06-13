@@ -1,14 +1,32 @@
 BIN := "./bin/calendar"
+SCHEDULER_BIN := "./bin/calendar_scheduler"
+SENDER_BIN := "./bin/calendar_sender"
 DOCKER_IMG="calendar:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
-build:
+build-calendar:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
 
-build-win:
+build-scheduler:
+	go build -v -o $(SCHEDULER_BIN) ./cmd/scheduler
+
+build-sender:
+	go build -v -o $(SENDER_BIN) ./cmd/sender
+
+build: build-calendar build-scheduler build-sender
+
+build-win-calendar:
 	GOOS=windows GOARCH=amd64 go build -v -o $(BIN).exe -ldflags "$(LDFLAGS)" ./cmd/calendar
+
+build-win-scheduler:
+	GOOS=windows GOARCH=amd64 go build -v -o $(SCHEDULER_BIN).exe ./cmd/scheduler
+
+build-win-sender:
+	GOOS=windows GOARCH=amd64 go build -v -o $(SENDER_BIN).exe ./cmd/sender
+
+build-win: build-win-calendar build-win-scheduler build-win-sender
 
 run: build
 	$(BIN) -config ./configs/config.toml
