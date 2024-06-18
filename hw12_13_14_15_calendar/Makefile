@@ -7,13 +7,13 @@ GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
 build-calendar:
-	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
+	GOOS=linux go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
 
 build-scheduler:
-	go build -v -o $(SCHEDULER_BIN) ./cmd/scheduler
+	GOOS=linux go build -v -o $(SCHEDULER_BIN) ./cmd/scheduler
 
 build-sender:
-	go build -v -o $(SENDER_BIN) ./cmd/sender
+	GOOS=linux go build -v -o $(SENDER_BIN) ./cmd/sender
 
 build: build-calendar build-scheduler build-sender
 
@@ -54,5 +54,16 @@ lint: install-lint-deps
 
 generate:
 	protoc ./internal/server/grpc/calendar.proto --go_out=./internal/server/grpc/pb --go-grpc_out=./internal/server/grpc/pb
+
+up: 
+	docker compose up -d --build
+
+down:
+	docker compose down
+
+run-integration-test:
+	go test ./intergation_tests/...
+
+integration-tests: up run-integration-test down
 
 .PHONY: build run build-img run-img version test lint

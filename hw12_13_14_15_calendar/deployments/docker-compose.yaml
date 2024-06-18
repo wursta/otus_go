@@ -1,19 +1,52 @@
-version: "3"
+version: "3.9"
 
 services:
+  api:
+    build:
+      context: ../
+      dockerfile: ./deployments/images/api/Dockerfile    
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: 
+      - 8080:8080
+    links: 
+      - db
+
+  scheduler:
+    build:
+      context: ../
+      dockerfile: ./deployments/images/scheduler/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy        
+      db:
+        condition: service_healthy        
+    links: 
+      - db
+      - rabbitmq
+
+  sender:
+    build:
+      context: ../
+      dockerfile: ./deployments/images/sender/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy        
+    links:
+      - rabbitmq
+
   db:
-    image: postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-calendar}
-      POSTGRES_USER: ${POSTGRES_USER:-calendar_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-calendar}
+    build:
+      context: ../
+      dockerfile: ./deployments/images/postgres/Dockerfile    
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod" ]
+      test: [ "CMD-SHELL", "pg_isready", "-d", "calendar" ]
       timeout: 5s
       retries: 30
       start_period: 80s
     ports:
-      - 5432:5432
+      - 5432:5432    
     volumes:
       - ./volumes/postgres:/var/lib/postgresql/data:delegated
   
@@ -26,4 +59,4 @@ services:
       retries: 3
     ports:
       - 15672:15672
-      - 5672:5672
+      - 5672:5672    

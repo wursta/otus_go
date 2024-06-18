@@ -5,15 +5,15 @@ level = "DEBUG"
 type = "postgres"
 
 [postgres]
-dsn = "postgres://calendar:calendar@localhost:5432/calendar"
+dsn = "$CALENDAR_DB_DSN"
 
 [grpc]
-host = "0.0.0.0"
-port = 50051
+host = "$CALENDAR_API_GRPC_HOST"
+port = $CALENDAR_API_GRPC_PORT
 
 [http]
-host = "localhost"
-port = 8080
+host = "$CALENDAR_API_HTTP_HOST"
+port = $CALENDAR_API_HTTP_PORT
 timeout = 30
 
 [scheduler]
@@ -21,7 +21,7 @@ eventsNotifyCheckFrequency = "1m"
 oldEventsCleanerFrequency="1h"
 
 [rabbit]
-uri = "amqp://guest:guest@localhost:5672"
+uri = "$CALENDAR_RABBITMQ_DSN"
 exchange = "calendar-notify-exchange"
 queue = "calendar-notify-queue"
 
