@@ -8,7 +8,7 @@ type = "postgres"
 dsn = "postgres://calendar:calendar@localhost:5432/calendar"
 
 [grpc]
-host = "0.0.0.0"
+host = "localhost"
 port = 50051
 
 [http]
