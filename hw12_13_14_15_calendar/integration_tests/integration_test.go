@@ -1,4 +1,4 @@
-package integration_tests
+package integrationtests
 
 import (
 	"context"
@@ -36,7 +36,6 @@ func TestCreateEventSuccess(t *testing.T) {
 	}
 
 	status, resp := sendRequest("http://localhost:8080/event/create", http.MethodPost, formData, headers)
-
 	require.Equal(t, http.StatusCreated, status, string(resp))
 
 	formData = url.Values{}
@@ -99,7 +98,6 @@ func TestUpdateEventSuccess(t *testing.T) {
 
 	formData.Set("title", "Test Test")
 	status, resp := sendRequest("http://localhost:8080/event/update", http.MethodPost, formData, headers)
-
 	require.Equal(t, http.StatusOK, status, string(resp))
 
 	formData = url.Values{}
@@ -167,7 +165,6 @@ func TestDeleteEvent(t *testing.T) {
 	formData = url.Values{}
 	formData.Add("id", uuid)
 	status, resp := sendRequest("http://localhost:8080/event/delete", http.MethodPost, formData, headers)
-
 	require.Equal(t, http.StatusOK, status, string(resp))
 }
 
@@ -194,7 +191,6 @@ func TestGetEventSuccess(t *testing.T) {
 	sendRequest("http://localhost:8080/event/create", http.MethodPost, formData, headers)
 
 	status, resp := sendRequest("http://localhost:8080/event/get?id="+uuid, http.MethodGet, nil, nil)
-
 	require.Equal(t, http.StatusOK, status, string(resp))
 	require.Equal(
 		t,
@@ -210,6 +206,7 @@ func TestGetEventSuccess(t *testing.T) {
 
 func TestListByDates(t *testing.T) {
 	uuid1 := uuid.NewString()
+
 	formData := url.Values{}
 	formData.Add("id", uuid1)
 	formData.Add("title", "Test")
@@ -224,6 +221,7 @@ func TestListByDates(t *testing.T) {
 	sendRequest("http://localhost:8080/event/create", http.MethodPost, formData, headers)
 
 	uuid2 := uuid.NewString()
+
 	formData = url.Values{}
 	formData.Add("id", uuid2)
 	formData.Add("title", "Test2")
@@ -234,6 +232,7 @@ func TestListByDates(t *testing.T) {
 	sendRequest("http://localhost:8080/event/create", http.MethodPost, formData, headers)
 
 	uuid3 := uuid.NewString()
+
 	formData = url.Values{}
 	formData.Add("id", uuid3)
 	formData.Add("title", "Test3")
@@ -273,7 +272,9 @@ func TestListByDates(t *testing.T) {
 
 func TestListOnDate(t *testing.T) {
 	uuid1 := uuid.NewString()
+
 	formData := url.Values{}
+
 	formData.Add("id", uuid1)
 	formData.Add("title", "Test")
 	formData.Add("start_dt", "2024-06-01")
@@ -287,6 +288,7 @@ func TestListOnDate(t *testing.T) {
 	sendRequest("http://localhost:8080/event/create", http.MethodPost, formData, headers)
 
 	uuid2 := uuid.NewString()
+
 	formData = url.Values{}
 	formData.Add("id", uuid2)
 	formData.Add("title", "Test2")
@@ -297,7 +299,6 @@ func TestListOnDate(t *testing.T) {
 	sendRequest("http://localhost:8080/event/create", http.MethodPost, formData, headers)
 
 	status, resp := sendRequest("http://localhost:8080/event/listOnDate?date=2024-06-01", http.MethodGet, nil, nil)
-
 	require.Equal(t, http.StatusOK, status, string(resp))
 	require.Equal(
 		t,
@@ -317,6 +318,7 @@ func TestListOnDate(t *testing.T) {
 
 func TestListOnWeek(t *testing.T) {
 	uuid1 := uuid.NewString()
+
 	formData := url.Values{}
 	formData.Add("id", uuid1)
 	formData.Add("title", "Test")
@@ -331,6 +333,7 @@ func TestListOnWeek(t *testing.T) {
 	sendRequest("http://localhost:8080/event/create", http.MethodPost, formData, headers)
 
 	uuid2 := uuid.NewString()
+
 	formData = url.Values{}
 	formData.Add("id", uuid2)
 	formData.Add("title", "Test2")
@@ -366,6 +369,7 @@ func TestListOnWeek(t *testing.T) {
 
 func TestListOnMonth(t *testing.T) {
 	uuid1 := uuid.NewString()
+
 	formData := url.Values{}
 	formData.Add("id", uuid1)
 	formData.Add("title", "Test")
@@ -380,6 +384,7 @@ func TestListOnMonth(t *testing.T) {
 	sendRequest("http://localhost:8080/event/create", http.MethodPost, formData, headers)
 
 	uuid2 := uuid.NewString()
+
 	formData = url.Values{}
 	formData.Add("id", uuid2)
 	formData.Add("title", "Test2")
@@ -418,17 +423,20 @@ func sendRequest(url string, method string, formData url.Values, headers map[str
 	defer cancel()
 
 	req, _ := http.NewRequestWithContext(ctx, method, url, strings.NewReader(formData.Encode()))
+
 	for key := range headers {
 		req.Header.Add(key, headers[key])
 	}
 
 	client := http.Client{}
+
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Printf("%v", err)
 	}
 
 	resData, _ := io.ReadAll(res.Body)
+
 	defer res.Body.Close()
 
 	return res.StatusCode, resData
