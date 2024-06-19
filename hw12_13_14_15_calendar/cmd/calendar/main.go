@@ -73,7 +73,7 @@ func main() {
 		calendar,
 		config.HTTP.Host,
 		config.HTTP.Port,
-		config.HTTP.Timeout,
+		time.Duration(int64(config.HTTP.Timeout)*int64(time.Millisecond)),
 	)
 	logg.Debug("create http server", httpServer)
 

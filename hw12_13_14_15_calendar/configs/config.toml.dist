@@ -1,0 +1,27 @@
+[logger]
+level = "DEBUG"
+
+[storage]
+type = "postgres"
+
+[postgres]
+dsn = "$CALENDAR_DB_DSN"
+
+[grpc]
+host = "$CALENDAR_API_GRPC_HOST"
+port = $CALENDAR_API_GRPC_PORT
+
+[http]
+host = "$CALENDAR_API_HTTP_HOST"
+port = $CALENDAR_API_HTTP_PORT
+timeout = 30
+
+[scheduler]
+eventsNotifyCheckFrequency = "1m"
+oldEventsCleanerFrequency="1h"
+
+[rabbit]
+uri = "$CALENDAR_RABBITMQ_DSN"
+exchange = "calendar-notify-exchange"
+queue = "calendar-notify-queue"
+

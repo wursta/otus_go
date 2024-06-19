@@ -91,6 +91,7 @@ func (s *Server) Start(_ context.Context) error {
 	s.server = &http.Server{
 		Addr:              address,
 		ReadHeaderTimeout: s.timeout,
+		ReadTimeout:       s.timeout,
 		Handler:           loggingMiddleware(s.mux),
 	}
 
