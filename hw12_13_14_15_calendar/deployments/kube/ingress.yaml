@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: calendar-app
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: calendar-app.local
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: calendar-api-service
+                port:
+                  number: 80
