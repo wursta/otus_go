@@ -5,18 +5,38 @@ metadata:
   namespace: calendar-app
   labels:
     app: calendar-api
+    db: calendar-db
 spec:
   selector:
     matchLabels:
       app: calendar-api
+      db: calendar-db
   replicas: 1
   template:
     metadata:
       labels:
         app: calendar-api
+        db: calendar-db
     spec:
       containers:
       - name: calendar-api
         image: calendar:develop
         ports:
         - containerPort: 80
+      containers:
+      - name: calendar-db
+        image: postgres
+        env:
+        - name: POSTGRES_USER
+          value: calendar
+        - name: POSTGRES_PASSWORD
+          value: calendar
+        - name: POSTGRES_DB
+          value: calendar
+        ports:
+        - containerPort: 5432
+        readinessProbe: 
+          tcpSocket: 
+            port: 5432
+          initialDelaySeconds: 15
+          periodSeconds: 10
