@@ -1,29 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: calendar-api-deployment
+  name: calendar-db-deployment
   namespace: calendar-app
   labels:
-    app: calendar-api
-    db: calendar-db
+    db: calendar-db    
 spec:
   selector:
-    matchLabels:
-      app: calendar-api
+    matchLabels:      
       db: calendar-db
   replicas: 1
   template:
     metadata:
-      labels:
-        app: calendar-api
+      labels:        
         db: calendar-db
     spec:
-      containers:
-      - name: calendar-api
-        image: calendar:develop
-        ports:
-        - containerPort: 80
-      containers:
+      containers:      
       - name: calendar-db
         image: postgres
         env:
