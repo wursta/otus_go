@@ -16,7 +16,19 @@ spec:
         app: calendar-api        
     spec:
       containers:
-      - name: calendar-api
-        image: calendar:develop
-        ports:
-        - containerPort: 80        
+        - name: calendar-api
+          image: calendar:develop
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /isready
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /isready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10

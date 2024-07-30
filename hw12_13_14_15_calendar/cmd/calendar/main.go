@@ -50,7 +50,7 @@ func main() {
 	case "inmemory":
 		storage = memorystorage.New()
 	case "postgres":
-		sqlStorage := sqlstorage.New(config.Postgres.Dsn)
+		sqlStorage := sqlstorage.New(config.Postgres.Dsn)		
 		ctx := context.Background()
 		err = sqlStorage.Connect(ctx)
 		if err != nil {

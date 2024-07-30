@@ -1,0 +1,16 @@
+replicaCount: 1
+image:
+  repository: calendar
+  tag: develop
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 8080
+ingress:
+  enabled: true
+  annotations: {}
+  hosts:
+    - host: calendar.local
+      paths:
+        - path: /
+          pathType: Prefix

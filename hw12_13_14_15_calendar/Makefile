@@ -2,6 +2,8 @@ BIN := "./bin/calendar"
 SCHEDULER_BIN := "./bin/calendar_scheduler"
 SENDER_BIN := "./bin/calendar_sender"
 DOCKER_IMG="calendar:develop"
+DOCKER_SCHEDULER_IMG="calendar-sheduler:develop"
+DOCKER_SENDER_IMG="calendar-sender:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
@@ -36,6 +38,18 @@ build-img:
 		--build-arg=LDFLAGS="$(LDFLAGS)" \
 		-t $(DOCKER_IMG) \
 		-f deployments/images/api/Dockerfile .
+
+build-scheduler-img:
+	docker build \
+		--build-arg=LDFLAGS="$(LDFLAGS)" \
+		-t $(DOCKER_SCHEDULER_IMG) \
+		-f deployments/images/scheduler/Dockerfile .	
+
+build-sender-img:
+	docker build \
+		--build-arg=LDFLAGS="$(LDFLAGS)" \
+		-t $(DOCKER_SENDER_IMG) \
+		-f deployments/images/sender/Dockerfile .	
 
 run-img: build-img
 	docker run $(DOCKER_IMG)
