@@ -69,7 +69,7 @@ func NewServer(logg Logger, app Application, host string, port string, timeout t
 		logger:  logg,
 	}
 
-	server.AddRoute("/hello", server.Hello)
+	server.AddRoute("/isready", server.IsReady)
 	server.AddRoute("/event/create", server.CreateEventHandler)
 	server.AddRoute("/event/update", server.UpdateEventHandler)
 	server.AddRoute("/event/delete", server.DeleteEventHandler)
@@ -115,8 +115,8 @@ func (s *Server) AddRoute(route string, handlerFunc http.HandlerFunc) {
 	s.mux.HandleFunc(route, handlerFunc)
 }
 
-func (s *Server) Hello(w http.ResponseWriter, _ *http.Request) {
-	_, err := w.Write([]byte("hello"))
+func (s *Server) IsReady(w http.ResponseWriter, _ *http.Request) {
+	_, err := w.Write([]byte("ok"))
 	if err != nil {
 		s.logger.Error(err.Error())
 		s.internalError(w, err)

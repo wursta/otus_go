@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calendar-scheduler-deployment
+  namespace: calendar-app
+  labels:
+    sender: calendar-scheduler
+spec:
+  selector:
+    matchLabels:
+      sender: calendar-scheduler
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        sender: calendar-scheduler
+    spec:
+      containers:
+        - name: calendar-scheduler
+          image: calendar-scheduler:develop          
